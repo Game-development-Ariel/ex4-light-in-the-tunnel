@@ -8,18 +8,43 @@ using UnityEngine.UI;
 /// </summary>
 public class ObjectiveMarker : MonoBehaviour
 {
-    // Above the HUD canvas's sorting order is not needed: the edge arrow has its own canvas.
+    // Just above the HUD (10), so the edge arrow is never hidden behind the hope bar.
     private const int CanvasSortingOrder = 12;
 
-    private static readonly Color MarkerColor = new Color(1f, 0.95f, 0.85f, 0.75f);
+    // The floating arrow is drawn above the walls and the player, and its glow right behind it.
+    private const int ArrowSortingOrder = 20;
 
     // The chevron sprite is drawn pointing down. Rotating by (angle + 90) points it at the angle.
     private const float SpriteDownOffset = 90f;
 
+    // The size of the arrow on the screen's edge, in UI pixels.
+    private static readonly Vector2 EdgeArrowSize = new Vector2(60f, 60f);
+
+    // A tiny length, in UI pixels, so the math never divides by zero when the goal is straight above, below or to the side.
+    private const float MinDirection = 0.001f;
+
     [Tooltip("Where to go after the bottle is picked up")]
     [SerializeField] private Transform mattress;
 
-    [SerializeField] private BottleCarrier carrier;
+    [Tooltip("Where the bottle is, while it is on the floor")]
+    [SerializeField] private BottleSpawner spawner;
+
+    [Header("Listens to")]
+    [SerializeField] private GameEvent bottlePicked;
+    [SerializeField] private GameEvent bottleDropped;
+
+    [Header("Look")]
+    [Tooltip("The color of both arrows, the floating one and the one on the edge")]
+    [SerializeField] private Color markerColor = new Color(1f, 0.95f, 0.85f, 0.75f);
+
+    [Tooltip("A faint glow behind the floating arrow, so it reads in the dark without shouting")]
+    [SerializeField] private Color glowColor = new Color(1f, 0.85f, 0.6f, 0.25f);
+
+    [Tooltip("The size of the glow, compared to the arrow")]
+    [SerializeField] private float glowScale = 1.6f;
+
+    [Tooltip("How fast the edge arrow pulses, and how much it grows. 0.06 = 6 percent")]
+    [SerializeField] private Vector2 edgePulse = new Vector2(2.5f, 0.06f);
 
     [Tooltip("How high over the goal the arrow floats, in world units")]
     [SerializeField] private float heightAbove = 1f;
@@ -34,7 +59,31 @@ public class ObjectiveMarker : MonoBehaviour
     private Transform worldArrow;
     private RectTransform canvasRect;
     private RectTransform edgeArrow;
-    private WaterBottle bottle;
+
+    // True while the player carries the bottle, so the goal is the mattress.
+    private bool carrying;
+
+    private void OnEnable()
+    {
+        bottlePicked.Subscribe(OnBottlePicked);
+        bottleDropped.Subscribe(OnBottleDropped);
+    }
+
+    private void OnDisable()
+    {
+        bottlePicked.Unsubscribe(OnBottlePicked);
+        bottleDropped.Unsubscribe(OnBottleDropped);
+    }
+
+    private void OnBottlePicked()
+    {
+        carrying = true;
+    }
+
+    private void OnBottleDropped()
+    {
+        carrying = false;
+    }
 
     private void Start()
     {
@@ -44,10 +93,10 @@ public class ObjectiveMarker : MonoBehaviour
         Canvas canvas = UiFactory.CreateCanvas("Objective Canvas", CanvasSortingOrder);
         canvas.transform.SetParent(transform, false);
         canvasRect = canvas.GetComponent<RectTransform>();
-        Image arrow = UiFactory.CreateIcon(canvas.transform, "Chevron", new Vector2(60f, 60f));
-        arrow.color = MarkerColor;
+        Image arrow = UiFactory.CreateIcon(canvas.transform, "Chevron", EdgeArrowSize);
+        arrow.color = markerColor;
         edgeArrow = arrow.rectTransform;
-        UiFactory.Place(edgeArrow, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f));
+        UiFactory.Place(edgeArrow, UiFactory.Center, Vector2.zero, EdgeArrowSize);
     }
 
     /// <summary>
@@ -64,24 +113,23 @@ public class ObjectiveMarker : MonoBehaviour
         sprite.transform.localScale = Vector3.one * worldArrowScale;
         SpriteRenderer spriteRenderer = sprite.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = UiTheme.Sprite("Chevron");
-        spriteRenderer.color = MarkerColor;
-        spriteRenderer.sortingOrder = 20; // Above the walls and the player.
+        spriteRenderer.color = markerColor;
+        spriteRenderer.sortingOrder = ArrowSortingOrder;
         sprite.AddComponent<Bob>();
 
-        // A faint glow behind the chevron, so it reads in the dark without shouting.
         var glow = new GameObject("Glow");
         glow.transform.SetParent(sprite.transform, false);
-        glow.transform.localScale = Vector3.one * 1.6f;
+        glow.transform.localScale = Vector3.one * glowScale;
         SpriteRenderer glowRenderer = glow.AddComponent<SpriteRenderer>();
         glowRenderer.sprite = UiTheme.Sprite("Glow");
-        glowRenderer.color = new Color(1f, 0.85f, 0.6f, 0.25f);
-        glowRenderer.sortingOrder = 19;
+        glowRenderer.color = glowColor;
+        glowRenderer.sortingOrder = ArrowSortingOrder - 1;
     }
 
     // LateUpdate: after the camera and the player moved this frame.
     private void LateUpdate()
     {
-        Transform goal = CurrentGoal();
+        Transform goal = carrying ? mattress : spawner.Bottle;
         worldArrow.gameObject.SetActive(goal != null);
         edgeArrow.gameObject.SetActive(false);
         if (goal == null)
@@ -100,21 +148,6 @@ public class ObjectiveMarker : MonoBehaviour
         }
     }
 
-    private Transform CurrentGoal()
-    {
-        if (carrier.HasBottle)
-        {
-            return mattress;
-        }
-
-        // The spawner makes a new bottle after the player drops it, so we look for it again when it's gone.
-        if (bottle == null)
-        {
-            bottle = FindAnyObjectByType<WaterBottle>();
-        }
-        return bottle != null ? bottle.transform : null;
-    }
-
     /// <summary>Puts the edge arrow on the line from the screen's center toward the goal, just inside the edge.</summary>
     private void PlaceEdgeArrow(Vector3 viewport)
     {
@@ -122,12 +155,12 @@ public class ObjectiveMarker : MonoBehaviour
         Vector2 direction = new Vector2((viewport.x - 0.5f) * half.x * 2f, (viewport.y - 0.5f) * half.y * 2f);
 
         // Stretch the direction until it touches the nearer edge (left/right or top/bottom).
-        float toSide = (half.x - edgeMargin) / Mathf.Max(Mathf.Abs(direction.x), 0.001f);
-        float toTop = (half.y - edgeMargin) / Mathf.Max(Mathf.Abs(direction.y), 0.001f);
+        float toSide = (half.x - edgeMargin) / Mathf.Max(Mathf.Abs(direction.x), MinDirection);
+        float toTop = (half.y - edgeMargin) / Mathf.Max(Mathf.Abs(direction.y), MinDirection);
         Vector2 position = direction * Mathf.Min(toSide, toTop);
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        float pulse = 1f + Mathf.Sin(Time.time * 2.5f) * 0.06f;
+        float pulse = 1f + Mathf.Sin(Time.time * edgePulse.x) * edgePulse.y;
 
         edgeArrow.gameObject.SetActive(true);
         edgeArrow.anchoredPosition = position;

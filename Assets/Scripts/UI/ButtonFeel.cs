@@ -13,6 +13,9 @@ public class ButtonFeel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     // How fast the size follows the goal. Higher = snappier.
     private const float Speed = 18f;
 
+    // The buttons are made in code (UiFactory.CreateButton), so this is a constant and not an Inspector field.
+    private const float ClickVolume = 0.6f;
+
     private float goalScale = 1f;
 
     private void Update()
@@ -34,7 +37,7 @@ public class ButtonFeel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void OnPointerDown(PointerEventData eventData)
     {
         goalScale = PressedScale;
-        Sfx.Play("Click", 0.6f);
+        Sfx.Play("Click", ClickVolume);
     }
 
     public void OnPointerUp(PointerEventData eventData)

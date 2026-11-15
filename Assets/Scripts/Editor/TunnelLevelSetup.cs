@@ -1,30 +1,34 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Tools > Tunnel > 2 Setup Level: adds the game logic to the open Tutorial scene and connects it with events.
-/// - The player: a CharacterController, hope, the bottle carrier and the respawn.
-/// - The round rules, the bottle spawner, the mattress goal, the HUD and the end screen.
+/// - The player: a CharacterController, hope and what it does to the body, the bottle carrier and the respawn.
+/// - The round: its rules, its stats and the freeze, the bottle spawner and the mattress goal.
 /// Run it after Build Tutorial Map. Running it again is safe: things that already exist are kept.
 /// </summary>
 public static class TunnelLevelSetup
 {
-    public const string LevelScenePath = "Assets/Scenes/Tutorial.unity";
-    private const string BottlePrefabPath = "Assets/Prefabs/WaterBottle.prefab";
-
     // The trigger is a bit smaller than a tile, so the player has to really reach the bottle.
     private const float BottleTriggerRadius = 0.35f;
 
     // Extra size around the mattress tiles, so touching its edge counts.
     private const float GoalPadding = 0.4f;
 
+    // The player's ball, in tiles, and the thin space it keeps from walls so it doesn't get stuck in them.
     private const float PlayerRadius = 0.3f;
+    private const float PlayerSkinWidth = 0.02f;
 
-    // From the design document: in the tutorial the hero is hurt, so he walks 2 tiles per second instead of 3.
+    // From the design document: in the tutorial the hero is hurt, so his base speed is 2 tiles per second
+    // instead of 3. HopeSenses multiplies it by HopeEffects.speedFactor, so the real speed changes with hope.
     private const float TutorialPlayerSpeed = 2f;
+
+    // PlayerMovement's own default. If the scene still has it, the speed was never set for the tutorial.
+    private const float UntunedPlayerSpeed = 5f;
 
     // Unity's built-in layer that raycasts skip. The player is on it, so the camera's rays stop only at walls.
     private const int IgnoreRaycastLayer = 2;
@@ -33,7 +37,7 @@ public static class TunnelLevelSetup
     public static void Setup()
     {
         Scene level = SceneManager.GetActiveScene();
-        if (level.path != LevelScenePath)
+        if (level.path != TunnelAssets.ScenePath)
         {
             Debug.LogError("Open the Tutorial scene first.");
             return;
@@ -45,21 +49,38 @@ public static class TunnelLevelSetup
         SetupSpawner();
         SetupMattressGoal();
         SetupCameraShake();
+        WireLevelEnd();
 
         EditorSceneManager.MarkSceneDirty(level);
         EditorSceneManager.SaveScene(level);
         Debug.Log("Tunnel level setup done and saved.");
     }
 
+    /// <summary>
+    /// What LevelFreeze turns off when the level ends. The sound is made by Setup Game Feel,
+    /// so that tool calls this again after it rebuilds the sound.
+    /// </summary>
+    public static void WireLevelEnd()
+    {
+        LevelFreeze freeze = Object.FindAnyObjectByType<LevelFreeze>();
+        var stop = new System.Collections.Generic.List<Object> { GameObject.Find("Player"), GameObject.Find("Watchers") };
+        GameObject sound = GameObject.Find("Sound");
+        if (sound != null)
+        {
+            stop.Add(sound);
+        }
+        SetupTools.SetArray(freeze, "stopWhenLevelEnds", stop.ToArray());
+    }
+
     /// <summary>The bottle's trigger becomes a 3D sphere, because the player is a CharacterController now.</summary>
     private static void SetupBottlePrefab()
     {
-        GameObject bottle = PrefabUtility.LoadPrefabContents(BottlePrefabPath);
+        GameObject bottle = PrefabUtility.LoadPrefabContents(TunnelAssets.BottlePrefabPath);
         Object.DestroyImmediate(bottle.GetComponent<Collider2D>());
         SphereCollider trigger = SetupTools.GetOrAdd<SphereCollider>(bottle);
         trigger.isTrigger = true;
         trigger.radius = BottleTriggerRadius;
-        PrefabUtility.SaveAsPrefabAsset(bottle, BottlePrefabPath);
+        PrefabUtility.SaveAsPrefabAsset(bottle, TunnelAssets.BottlePrefabPath);
         PrefabUtility.UnloadPrefabContents(bottle);
     }
 
@@ -77,32 +98,40 @@ public static class TunnelLevelSetup
         controller.radius = PlayerRadius;
         controller.height = PlayerRadius * 2f;
         controller.stepOffset = 0f; // Nothing to climb on a flat map.
-        controller.skinWidth = 0.02f;
+        controller.skinWidth = PlayerSkinWidth;
         controller.minMoveDistance = 0f;
 
-        PlayerMovement movement = player.GetComponent<PlayerMovement>();
-        SerializedObject fields = new SerializedObject(movement);
-        fields.FindProperty("moveSpeed").floatValue = TutorialPlayerSpeed;
-        fields.ApplyModifiedPropertiesWithoutUndo();
+        // The speed is written only if it was never set, so a speed tuned in the Inspector is kept.
+        SerializedObject fields = new SerializedObject(player.GetComponent<PlayerMovement>());
+        SerializedProperty speed = fields.FindProperty("moveSpeed");
+        if (Mathf.Approximately(speed.floatValue, UntunedPlayerSpeed))
+        {
+            speed.floatValue = TutorialPlayerSpeed;
+            fields.ApplyModifiedPropertiesWithoutUndo();
+        }
 
         SetupTools.GetOrAdd<PlayerPush>(player);
-
-        // Hope changes the body: speed, sight (the soft light on the Body child) and hearing.
-        HopeSenses senses = SetupTools.GetOrAdd<HopeSenses>(player);
-        SetupTools.SetField(senses, "effects", TunnelAssets.HopeEffects);
-        SetupTools.SetField(senses, "eyes", player.transform.Find("Body").GetComponent<UnityEngine.Rendering.Universal.Light2D>());
-        SetupTools.SetField(senses, "tunnelLight", GameObject.Find("Global Light 2D").GetComponent<UnityEngine.Rendering.Universal.Light2D>());
-        SetupTools.SetField(senses, "hintRequested", TunnelAssets.HintRequested);
-        foreach (HeardSteps steps in Object.FindObjectsByType<HeardSteps>(FindObjectsSortMode.None))
-        {
-            SetupTools.SetField(steps, "listener", senses);
-        }
 
         Hope hope = SetupTools.GetOrAdd<Hope>(player);
         SetupTools.SetField(hope, "settings", TunnelAssets.LevelSettings);
 
+        // Hope changes the body: speed, sight (the soft light on the Body child) and hearing.
+        HopeSenses senses = SetupTools.GetOrAdd<HopeSenses>(player);
+        SetupTools.SetField(senses, "effects", TunnelAssets.HopeEffects);
+        SetupTools.SetField(senses, "eyes", player.transform.Find("Body").GetComponent<Light2D>());
+        SetupTools.SetField(senses, "tunnelLight", GameObject.Find("Global Light 2D").GetComponent<Light2D>());
+        foreach (HeardSteps steps in Object.FindObjectsByType<HeardSteps>(FindObjectsSortMode.None))
+        {
+            SetupTools.SetField(steps, "heroSenses", senses);
+        }
+
+        HopeThoughts thoughts = SetupTools.GetOrAdd<HopeThoughts>(player);
+        SetupTools.SetField(thoughts, "effects", TunnelAssets.HopeEffects);
+        SetupTools.SetField(thoughts, "hintRequested", TunnelAssets.HintRequested);
+
         BottleCarrier carrier = SetupTools.GetOrAdd<BottleCarrier>(player);
         SetupTools.SetField(carrier, "bottlePicked", TunnelAssets.BottlePicked);
+        SetupTools.SetField(carrier, "bottleDropped", TunnelAssets.BottleDropped);
         SetupTools.SetField(carrier, "playerCaught", TunnelAssets.PlayerCaught);
 
         PlayerRespawn respawn = SetupTools.GetOrAdd<PlayerRespawn>(player);
@@ -111,25 +140,41 @@ public static class TunnelLevelSetup
         return player;
     }
 
+    /// <summary>The Round object holds the level's rules, its stats, and the freeze that decides when it is played.</summary>
     private static void SetupRound(GameObject player)
     {
         Object.DestroyImmediate(GameObject.Find("GameManager")); // Left from assignment 3.
+        GameObject roundObject = SetupTools.Recreate("Round");
 
-        TunnelRound round = SetupTools.Recreate("Round").AddComponent<TunnelRound>();
+        TunnelRound round = roundObject.AddComponent<TunnelRound>();
         SetupTools.SetField(round, "settings", TunnelAssets.LevelSettings);
         SetupTools.SetField(round, "hope", player.GetComponent<Hope>());
         SetupTools.SetField(round, "playerCaught", TunnelAssets.PlayerCaught);
         SetupTools.SetField(round, "bottleDelivered", TunnelAssets.BottleDelivered);
         SetupTools.SetField(round, "levelWon", TunnelAssets.LevelWon);
         SetupTools.SetField(round, "levelLost", TunnelAssets.LevelLost);
+
+        RoundStats stats = roundObject.AddComponent<RoundStats>();
+        SetupTools.SetField(stats, "openingFinished", TunnelAssets.OpeningFinished);
+        SetupTools.SetField(stats, "playerCaught", TunnelAssets.PlayerCaught);
+        SetupTools.SetField(stats, "levelWon", TunnelAssets.LevelWon);
+        SetupTools.SetField(stats, "levelLost", TunnelAssets.LevelLost);
+
+        LevelFreeze freeze = roundObject.AddComponent<LevelFreeze>();
+        SetupTools.SetField(freeze, "settings", TunnelAssets.LevelSettings);
+        SetupTools.SetField(freeze, "player", player.GetComponent<PlayerMovement>());
+        SetupTools.SetField(freeze, "watchers", GameObject.Find("Watchers").transform);
+        SetupTools.SetField(freeze, "openingFinished", TunnelAssets.OpeningFinished);
+        SetupTools.SetField(freeze, "playerCaught", TunnelAssets.PlayerCaught);
+        SetupTools.SetField(freeze, "levelWon", TunnelAssets.LevelWon);
+        SetupTools.SetField(freeze, "levelLost", TunnelAssets.LevelLost);
     }
 
     private static void SetupSpawner()
     {
         BottleSpawner spawner = SetupTools.GetOrAdd<BottleSpawner>(GameObject.Find("BottleSpawn"));
-        SetupTools.SetField(spawner, "bottlePrefab", AssetDatabase.LoadAssetAtPath<GameObject>(BottlePrefabPath));
-        SetupTools.SetField(spawner, "playerCaught", TunnelAssets.PlayerCaught);
-        SetupTools.SetField(spawner, "carrier", GameObject.Find("Player").GetComponent<BottleCarrier>());
+        SetupTools.SetField(spawner, "bottlePrefab", TunnelAssets.BottlePrefab);
+        SetupTools.SetField(spawner, "bottleDropped", TunnelAssets.BottleDropped);
     }
 
     /// <summary>Puts a trigger box over the mattress tiles of the Decor tilemap.</summary>
