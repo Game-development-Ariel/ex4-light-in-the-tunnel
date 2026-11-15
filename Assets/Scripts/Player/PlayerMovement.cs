@@ -14,9 +14,12 @@ public class PlayerMovement : MonoBehaviour
     // Angle 0 in Unity points right, but the player sprite is drawn facing up.
     private const float SpriteForwardOffsetDegrees = -90f;
 
-    // Input weaker than this counts as "not moving", so a small gamepad drift doesn't turn the body or make steps.
+    // Input weaker than this counts as "no input", so a small gamepad drift doesn't turn the body.
     // It is compared with the squared length of the input, so 0.01 means a tilt of 0.1.
-    private const float MinInputToWalk = 0.01f;
+    private const float MinInputToTurn = 0.01f;
+
+    // Slower than this, in world units per second, the player counts as standing (for example when pushing against a wall).
+    private const float MinSpeedToWalk = 0.1f;
 
     [Tooltip("Movement speed, in world units per second")]
     [SerializeField] private float moveSpeed = 5f;
@@ -43,8 +46,11 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>How fast the player is walking right now: 0 when standing, less when the joystick is only tilted a little.</summary>
     public float WalkingSpeed => Mathf.Min(moveInput.magnitude, 1f) * CurrentSpeed;
 
-    /// <summary>True while the player is trying to walk. Footsteps, the walking bounce and the quiet place read it.</summary>
-    public bool IsWalking => moveInput.sqrMagnitude > MinInputToWalk;
+    /// <summary>
+    /// True while the player really moves across the floor. Footsteps, the walking bounce and the quiet place read it.
+    /// Walking into a wall doesn't count, and neither does a frozen player (the controller keeps its last velocity).
+    /// </summary>
+    public bool IsWalking => enabled && controller.velocity.magnitude > MinSpeedToWalk;
 
     /// <summary>
     /// Adds the default keys, so the action works without setting it in the Inspector.
@@ -99,7 +105,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Turns the body a little each frame toward the walking direction.</summary>
     private void TurnBodyTowardMovement()
     {
-        if (body == null || !IsWalking)
+        if (body == null || moveInput.sqrMagnitude <= MinInputToTurn)
         {
             return; // When the player stops, the body keeps facing the last direction.
         }
