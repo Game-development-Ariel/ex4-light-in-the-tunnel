@@ -6,8 +6,7 @@ using UnityEngine.InputSystem;
 /// The movement goes through a CharacterController, so the wall colliders stop the player
 /// and the player slides along a wall instead of getting stuck on it.
 /// The map is flat on the X-Y plane, so the controller's height equals twice its radius, which makes it a ball.
-/// The body (sprite + flashlight) turns to the walking direction,
-/// so the flashlight shows what the character is looking at.
+/// The body (the sprite) turns to the walking direction, so the hero faces where he goes.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
@@ -15,8 +14,9 @@ public class PlayerMovement : MonoBehaviour
     // Angle 0 in Unity points right, but the player sprite is drawn facing up.
     private const float SpriteForwardOffsetDegrees = -90f;
 
-    // Input weaker than this counts as "not moving", so a small gamepad drift doesn't turn the body.
-    private const float MinInputToTurn = 0.01f;
+    // Input weaker than this counts as "not moving", so a small gamepad drift doesn't turn the body or make steps.
+    // It is compared with the squared length of the input, so 0.01 means a tilt of 0.1.
+    private const float MinInputToWalk = 0.01f;
 
     [Tooltip("Movement speed, in world units per second")]
     [SerializeField] private float moveSpeed = 5f;
@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("How fast the body turns, in degrees per second")]
     [SerializeField] private float turnSpeed = 720f;
 
-    [Tooltip("The child object that turns: the sprite and the flashlight")]
+    [Tooltip("The child object that turns: the sprite")]
     [SerializeField] private Transform body;
 
     [Tooltip("The movement direction. Arrows, WASD and the left gamepad stick by default")]
@@ -42,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
 
     /// <summary>How fast the player is walking right now: 0 when standing, less when the joystick is only tilted a little.</summary>
     public float WalkingSpeed => Mathf.Min(moveInput.magnitude, 1f) * CurrentSpeed;
+
+    /// <summary>True while the player is trying to walk. Footsteps, the walking bounce and the quiet place read it.</summary>
+    public bool IsWalking => moveInput.sqrMagnitude > MinInputToWalk;
 
     /// <summary>
     /// Adds the default keys, so the action works without setting it in the Inspector.
@@ -76,9 +79,11 @@ public class PlayerMovement : MonoBehaviour
         moveAction.Enable();
     }
 
+    // While the movement is off the player stands still, so nothing should think he still walks.
     private void OnDisable()
     {
         moveAction.Disable();
+        moveInput = Vector2.zero;
     }
 
     /// <summary>Reads the input every frame, moves, and turns the body toward the walking direction.</summary>
@@ -94,8 +99,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Turns the body a little each frame toward the walking direction.</summary>
     private void TurnBodyTowardMovement()
     {
-        bool isMoving = moveInput.sqrMagnitude > MinInputToTurn;
-        if (body == null || !isMoving)
+        if (body == null || !IsWalking)
         {
             return; // When the player stops, the body keeps facing the last direction.
         }
