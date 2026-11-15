@@ -15,6 +15,15 @@ public class EndScreen : MonoBehaviour
     // Above everything else in the level, below the scene fader.
     private const int CanvasSortingOrder = 60;
 
+    // The dark that covers the level. It starts see-through and fades to its full alpha (1).
+    private static readonly Color BackgroundColor = new Color(0.02f, 0.02f, 0.03f, 0f);
+
+    // The beam of light from the top of the screen, in UI pixels.
+    private static readonly Vector2 BeamSize = new Vector2(900f, 1100f);
+
+    // The icons of the results are a bit see-through, so the numbers stand out.
+    private const float ResultIconAlpha = 0.75f;
+
     [Header("The words")]
     [SerializeField] private string title = "Day 1";
     [SerializeField] private string winSubtitle = "I made it through the first day.";
@@ -79,7 +88,7 @@ public class EndScreen : MonoBehaviour
     {
         UiFactory.EnsureEventSystem();
         canvas = UiFactory.CreateCanvas("End Canvas", CanvasSortingOrder).transform;
-        Image background = UiFactory.CreateImage(canvas, "Background", null, new Color(0.02f, 0.02f, 0.03f, 0f));
+        Image background = UiFactory.CreateImage(canvas, "Background", null, BackgroundColor);
         UiFactory.Stretch(background.rectTransform);
         background.raycastTarget = true;
         yield return UiAnim.FadeGraphic(background, 1f, settings.endFadeSeconds);
@@ -91,7 +100,7 @@ public class EndScreen : MonoBehaviour
         Sfx.Play(won ? "Win" : "Lose", endSoundVolume);
 
         Image beam = UiFactory.CreateImage(canvas, "Beam", UiTheme.Sprite("Beam"), new Color(1f, 1f, 1f, 0f));
-        UiFactory.Place(beam.rectTransform, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(900f, 1100f));
+        UiFactory.Place(beam.rectTransform, new Vector2(0.5f, 1f), Vector2.zero, BeamSize);
         StartCoroutine(UiAnim.FadeGraphic(beam, won ? beamBrightness.x : beamBrightness.y, beamSeconds));
         Image vignette = UiFactory.CreateImage(canvas, "Vignette", UiTheme.Sprite("Vignette"), Color.white);
         UiFactory.Stretch(vignette.rectTransform);
@@ -155,7 +164,7 @@ public class EndScreen : MonoBehaviour
         RectTransform item = UiFactory.CreateRow(row, icon, 14f);
 
         Image image = UiFactory.CreateIcon(item, icon, new Vector2(40f, 40f));
-        image.color = new Color(1f, 1f, 1f, 0.75f);
+        image.color = new Color(1f, 1f, 1f, ResultIconAlpha);
 
         Text text = UiFactory.CreateText(item, icon + " Value", UiFactory.Center, new Vector2(0f, 50f), 30, TextAnchor.MiddleLeft);
         text.horizontalOverflow = HorizontalWrapMode.Overflow;

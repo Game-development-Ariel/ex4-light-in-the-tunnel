@@ -15,6 +15,13 @@ public static class UiFactory
     // 0.5 = scale by both width and height equally, so it works in landscape and portrait.
     private const float WidthHeightMatch = 0.5f;
 
+    // A little more room between the lines of a thought than the font's default.
+    private const float LineSpacing = 1.1f;
+
+    // A soft dark shadow down and to the right keeps light text readable over the floor.
+    private static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.7f);
+    private static readonly Vector2 ShadowOffset = new Vector2(2f, -2f);
+
     /// <summary>Anchor points of a parent: the middle, and the top-left corner.</summary>
     public static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
     public static readonly Vector2 TopLeft = new Vector2(0f, 1f);
@@ -51,12 +58,11 @@ public static class UiFactory
         text.raycastTarget = false;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.lineSpacing = 1.1f;
+        text.lineSpacing = LineSpacing;
 
-        // A soft dark shadow keeps light text readable over the floor.
         Shadow shadow = textObject.AddComponent<Shadow>();
-        shadow.effectColor = new Color(0f, 0f, 0f, 0.7f);
-        shadow.effectDistance = new Vector2(2f, -2f);
+        shadow.effectColor = ShadowColor;
+        shadow.effectDistance = ShadowOffset;
         return text;
     }
 

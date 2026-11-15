@@ -13,6 +13,14 @@ public class HintToast : MonoBehaviour
     private const int CanvasSortingOrder = 20;
 
     private const float KeySize = 58f;
+    private const float KeySpacing = 10f;
+
+    // The dark band at the bottom of the screen, the message in it, and the row of keys above it, in UI pixels.
+    private static readonly Vector2 BandOffset = new Vector2(0f, 40f);
+    private static readonly Vector2 BandSize = new Vector2(1500f, 150f);
+    private static readonly Vector2 MessageSize = new Vector2(1250f, 140f);
+    private static readonly Vector2 KeyRowOffset = new Vector2(0f, 45f);
+    private static readonly Vector2 KeyRowSize = new Vector2(600f, KeySize);
 
     [Tooltip("Seconds a thought stays after it is fully written")]
     [SerializeField] private float showSeconds = 5f;
@@ -21,6 +29,12 @@ public class HintToast : MonoBehaviour
     [SerializeField] private float lettersPerSecond = 40f;
 
     [SerializeField] private TextEvent hintRequested;
+
+    [Tooltip("How loud the soft sound of a new thought is")]
+    [SerializeField] private float soundVolume = 0.5f;
+
+    [Tooltip("Seconds a thought takes to appear, and to fade away")]
+    [SerializeField] private Vector2 fadeSeconds = new Vector2(0.4f, 1.2f);
 
     private CanvasGroup group;
     private Text message;
@@ -37,13 +51,13 @@ public class HintToast : MonoBehaviour
 
         // A dark band that fades out at its ends, so the words are readable without a hard box.
         Image band = UiFactory.CreateImage(canvas.transform, "Band", UiTheme.Sprite("Band"), Color.white);
-        UiFactory.Place(band.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1500f, 150f));
+        UiFactory.Place(band.rectTransform, new Vector2(0.5f, 0f), BandOffset, BandSize);
 
-        message = UiFactory.CreateText(band.transform, "Message", UiFactory.Center, new Vector2(1250f, 140f), 34, TextAnchor.MiddleCenter);
+        message = UiFactory.CreateText(band.transform, "Message", UiFactory.Center, MessageSize, 34, TextAnchor.MiddleCenter);
         message.rectTransform.pivot = UiFactory.Center;
 
-        keyRow = UiFactory.CreateRow(band.transform, "Keys", 10f);
-        UiFactory.Place(keyRow, new Vector2(0.5f, 1f), new Vector2(0f, 45f), new Vector2(600f, KeySize));
+        keyRow = UiFactory.CreateRow(band.transform, "Keys", KeySpacing);
+        UiFactory.Place(keyRow, new Vector2(0.5f, 1f), KeyRowOffset, KeyRowSize);
         keyRow.pivot = UiFactory.Center;
     }
 
@@ -75,12 +89,12 @@ public class HintToast : MonoBehaviour
 
     private IEnumerator ShowRoutine(string text)
     {
-        Sfx.Play("Hint", 0.5f);
+        Sfx.Play("Hint", soundVolume);
         message.text = "";
-        yield return UiAnim.Fade(group, 1f, 0.4f);
+        yield return UiAnim.Fade(group, 1f, fadeSeconds.x);
         yield return UiAnim.Typewriter(message, text, lettersPerSecond);
         yield return new WaitForSeconds(showSeconds);
-        yield return UiAnim.Fade(group, 0f, 1.2f);
+        yield return UiAnim.Fade(group, 0f, fadeSeconds.y);
     }
 
     private void SetKeys(string[] keys)

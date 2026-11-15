@@ -11,8 +11,18 @@ public class MemoryCaption : MonoBehaviour
 {
     private const int CanvasSortingOrder = 30;
 
+    // The memory is written in the upper middle of the screen, in UI pixels.
+    private static readonly Vector2 TextSize = new Vector2(1300f, 200f);
+    private static readonly Vector2 TextOffset = new Vector2(0f, 170f);
+
     [SerializeField] private TextEvent memoryFound;
     [SerializeField] private float showSeconds = 5f;
+
+    [Tooltip("How loud the sound of a memory is")]
+    [SerializeField] private float soundVolume = 0.9f;
+
+    [Tooltip("Seconds a memory takes to appear, and to fade away")]
+    [SerializeField] private Vector2 fadeSeconds = new Vector2(1.5f, 2f);
 
     private readonly Queue<string> waiting = new Queue<string>();
     private CanvasGroup group;
@@ -27,9 +37,9 @@ public class MemoryCaption : MonoBehaviour
         group.alpha = 0f;
         group.blocksRaycasts = false;
 
-        text = UiFactory.CreateTitle(canvas.transform, "Memory", UiFactory.Center, new Vector2(1300f, 200f), 46, UiTheme.Hope);
+        text = UiFactory.CreateTitle(canvas.transform, "Memory", UiFactory.Center, TextSize, 46, UiTheme.Hope);
         text.rectTransform.pivot = UiFactory.Center;
-        text.rectTransform.anchoredPosition = new Vector2(0f, 170f);
+        text.rectTransform.anchoredPosition = TextOffset;
         text.font = UiTheme.ItalicFont;
     }
 
@@ -60,10 +70,10 @@ public class MemoryCaption : MonoBehaviour
         while (waiting.Count > 0)
         {
             text.text = waiting.Dequeue();
-            Sfx.Play("Memory", 0.9f);
-            yield return UiAnim.Fade(group, 1f, 1.5f);
+            Sfx.Play("Memory", soundVolume);
+            yield return UiAnim.Fade(group, 1f, fadeSeconds.x);
             yield return new WaitForSeconds(showSeconds);
-            yield return UiAnim.Fade(group, 0f, 2f);
+            yield return UiAnim.Fade(group, 0f, fadeSeconds.y);
         }
         isShowing = false;
     }

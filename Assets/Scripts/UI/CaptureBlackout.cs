@@ -11,6 +11,10 @@ public class CaptureBlackout : MonoBehaviour
     // Above the HUD and the hints, below the title card and the end screen.
     private const int CanvasSortingOrder = 40;
 
+    // Almost black with a little red, and not fully opaque, so the dark feels like closed eyes.
+    private static readonly Color DarkColor = new Color(0.02f, 0f, 0f, 0.96f);
+    private static readonly Vector2 LineSize = new Vector2(1200f, 120f);
+
     [Tooltip("How long the player is held after being caught. The dark lasts exactly that long")]
     [SerializeField] private TunnelLevelSettings settings;
 
@@ -53,10 +57,10 @@ public class CaptureBlackout : MonoBehaviour
         blackout.alpha = 0f;
         blackout.blocksRaycasts = false;
 
-        Image black = UiFactory.CreateImage(canvas.transform, "Black", null, new Color(0.02f, 0f, 0f, 0.96f));
+        Image black = UiFactory.CreateImage(canvas.transform, "Black", null, DarkColor);
         UiFactory.Stretch(black.rectTransform);
 
-        line = UiFactory.CreateTitle(canvas.transform, "Line", UiFactory.Center, new Vector2(1200f, 120f), 56, UiTheme.TextColor);
+        line = UiFactory.CreateTitle(canvas.transform, "Line", UiFactory.Center, LineSize, 56, UiTheme.TextColor);
         line.rectTransform.pivot = UiFactory.Center;
         line.font = UiTheme.ItalicFont;
     }
