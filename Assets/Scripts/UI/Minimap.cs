@@ -1,12 +1,11 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 /// <summary>
 /// Draws the whole map in the top-right corner of the screen, with a dot marking the player.
 /// A second camera renders the map into a texture, and a UI image shows that texture.
-/// The camera and the UI are created here in code, when the game starts.
+/// The camera and the UI are created here in code, when the game starts. MinimapToggle shows and hides it.
 /// </summary>
 public class Minimap : MonoBehaviour
 {
@@ -48,9 +47,8 @@ public class Minimap : MonoBehaviour
     [Tooltip("Color of the player dot")]
     [SerializeField] private Color playerColor = new Color(1f, 0.85f, 0.2f, 1f);
 
-    [Tooltip("Shows or hides the minimap. The M key by default")]
-    [SerializeField]
-    private InputAction toggleAction = new InputAction(type: InputActionType.Button);
+    [Tooltip("Tells the minimap when the screen changes size, so it can keep its size on the screen")]
+    [SerializeField] private ScreenSizeWatcher screenSize;
 
     // The area of the map, in world coordinates.
     private Bounds worldBounds;
@@ -61,31 +59,17 @@ public class Minimap : MonoBehaviour
     private CanvasScaler scaler;
     private RectTransform playerDot;
 
-    // The screen size we last scaled the UI to, so we only recalculate when it changes.
-    private int lastScreenWidth;
-    private int lastScreenHeight;
+    /// <summary>True while the minimap is on the screen.</summary>
+    public bool IsVisible => canvasObject.activeSelf;
 
-    /// <summary>
-    /// Adds the default key, so the action works without setting it in the Inspector.
-    /// Unity runs this in the editor when the component is loaded or changed.
-    /// </summary>
-    private void OnValidate()
-    {
-        if (toggleAction.bindings.Count == 0)
-        {
-            toggleAction.AddBinding("<Keyboard>/m");
-        }
-    }
-
-    // An InputAction reads nothing until it is enabled.
     private void OnEnable()
     {
-        toggleAction.Enable();
+        screenSize.Changed += UpdateUIScale;
     }
 
     private void OnDisable()
     {
-        toggleAction.Disable();
+        screenSize.Changed -= UpdateUIScale;
     }
 
     /// <summary>Finds the area of the map and builds the minimap around it.</summary>
@@ -117,16 +101,6 @@ public class Minimap : MonoBehaviour
 
     private void Update()
     {
-        if (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight)
-        {
-            UpdateUIScale();
-        }
-
-        if (toggleAction.WasPressedThisFrame())
-        {
-            ToggleVisible();
-        }
-
         if (player != null)
         {
             MoveDotToPlayer();
@@ -136,17 +110,13 @@ public class Minimap : MonoBehaviour
     /// <summary>Scales the UI by the short side of the screen, so rotating the phone doesn't change its size.</summary>
     private void UpdateUIScale()
     {
-        lastScreenWidth = Screen.width;
-        lastScreenHeight = Screen.height;
-
         int shortSide = Mathf.Min(Screen.width, Screen.height);
         scaler.scaleFactor = shortSide / ReferenceShortSide;
     }
 
     /// <summary>Shows or hides the minimap. The camera stops too, so it costs nothing while hidden.</summary>
-    private void ToggleVisible()
+    public void SetVisible(bool visible)
     {
-        bool visible = !canvasObject.activeSelf;
         canvasObject.SetActive(visible);
         minimapCamera.enabled = visible;
     }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// The noise a loose object makes: a bang when it hits a wall, and a softer sound when the player pushes it.
-/// Both get louder with the speed. The first loud bang also raises a thought, to teach the player to push slowly.
+/// Both get louder with the speed. Every wall hit is also reported to the level's NoiseWarning.
 /// Needs a Rigidbody.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
@@ -14,18 +14,11 @@ public class ImpactNoise : MonoBehaviour, IPushable
     [Tooltip("Seconds before the same sound can play again, so one bump doesn't play it many times")]
     [SerializeField] private float quietSeconds = 0.3f;
 
-    [Tooltip("A wall hit at this speed or faster raises the warning thought (the first time only)")]
-    [SerializeField] private float warnAboveSpeed = 1.2f;
-
-    [TextArea]
-    [SerializeField] private string warning = "Too loud. I push slowly, so nobody hears.";
-
-    [Tooltip("Raised with the warning, the first time only")]
-    [SerializeField] private TextEvent hintRequested;
+    [Tooltip("The level's warning about loud noise. One for all the loose objects, so it is shown once")]
+    [SerializeField] private NoiseWarning warning;
 
     private float nextHitTime;
     private float nextTouchTime;
-    private bool warned;
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -37,33 +30,24 @@ public class ImpactNoise : MonoBehaviour, IPushable
             return;
         }
 
-        Play(PickOne(sounds.wallHitSounds), sounds.VolumeFor(speed, sounds.fullVolumeHitSpeed), ref nextHitTime);
-        if (!warned && speed >= warnAboveSpeed)
-        {
-            warned = true;
-            hintRequested.Raise(warning);
-        }
+        Play(sounds.wallHitSounds, sounds.HitVolume(speed), ref nextHitTime);
+        warning.WallHit(speed);
     }
 
     public void PushStarted(float playerSpeed)
     {
-        Play(PickOne(sounds.touchSounds), sounds.VolumeFor(playerSpeed, sounds.fullVolumeTouchSpeed), ref nextTouchTime);
-    }
-
-    // A random one of a few recordings, so the same bump doesn't sound exactly the same every time.
-    private static string PickOne(string[] names)
-    {
-        return names[Random.Range(0, names.Length)];
+        Play(sounds.touchSounds, sounds.TouchVolume(playerSpeed), ref nextTouchTime);
     }
 
     // Each sound has its own timer, so touching a crate doesn't silence the bang right after it.
-    private void Play(string sound, float volume, ref float nextTime)
+    // A random one of a few recordings, so the same bump doesn't sound exactly the same every time.
+    private void Play(string[] names, float volume, ref float nextTime)
     {
-        if (Time.time < nextTime)
+        if (names.Length == 0 || Time.time < nextTime)
         {
             return;
         }
         nextTime = Time.time + quietSeconds;
-        Sfx.Play(sound, volume);
+        Sfx.Play(names[Random.Range(0, names.Length)], volume);
     }
 }
