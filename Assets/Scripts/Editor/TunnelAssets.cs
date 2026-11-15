@@ -1,13 +1,22 @@
+using UnityEngine;
+
 /// <summary>
-/// The data assets of the tunnel game (events and settings), in one place for the setup tools.
-/// Each one is created the first time it is asked for.
+/// The assets of the tunnel game in one place for the setup tools: the scene, the bottle prefab,
+/// and the data assets (events and settings). Each data asset is created the first time it is asked for.
 /// </summary>
 public static class TunnelAssets
 {
     private const string Folder = "Assets/Data/";
 
+    public const string ScenePath = "Assets/Scenes/Tutorial.unity";
+    public const string BottlePrefabPath = "Assets/Prefabs/WaterBottle.prefab";
+
+    public static GameObject BottlePrefab => UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(BottlePrefabPath);
+
     public static GameEvent PlayerCaught => SetupTools.Asset<GameEvent>(Folder + "Events/PlayerCaught.asset");
     public static GameEvent BottlePicked => SetupTools.Asset<GameEvent>(Folder + "Events/BottlePicked.asset");
+    public static GameEvent BottleDropped => SetupTools.Asset<GameEvent>(Folder + "Events/BottleDropped.asset");
+    public static GameEvent OpeningFinished => SetupTools.Asset<GameEvent>(Folder + "Events/OpeningFinished.asset");
     public static GameEvent BottleDelivered => SetupTools.Asset<GameEvent>(Folder + "Events/BottleDelivered.asset");
     public static GameEvent LevelWon => SetupTools.Asset<GameEvent>(Folder + "Events/LevelWon.asset");
     public static GameEvent LevelLost => SetupTools.Asset<GameEvent>(Folder + "Events/LevelLost.asset");
