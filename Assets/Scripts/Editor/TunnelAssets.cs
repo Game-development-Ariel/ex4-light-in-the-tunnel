@@ -19,21 +19,21 @@ public static class TunnelAssets
     public static HopeEffects HopeEffects => SetupTools.Asset<HopeEffects>(Folder + "HopeEffects.asset");
 
     /// <summary>A crate is light, so it gets fast and needs a faster hit to be at full volume.</summary>
-    public static ImpactSounds CrateSounds => Sounds("CrateSounds", "CrateHit", "CrateTouch", 2f);
+    public static ImpactSounds CrateSounds => Sounds("CrateSounds", new[] { "CrateHit1", "CrateHit2" }, new[] { "CrateTouch" }, 2f);
 
     /// <summary>A sandbag is heavy and slow, so a slower hit is already a loud one.</summary>
-    public static ImpactSounds SandbagSounds => Sounds("SandbagSounds", "SandbagHit", "SandbagTouch", 1.4f);
+    public static ImpactSounds SandbagSounds => Sounds("SandbagSounds", new[] { "SandbagHit" }, new[] { "SandbagTouch" }, 1.4f);
 
     // The values are written only when the asset is new, so tuning it in the Inspector is kept.
-    private static ImpactSounds Sounds(string name, string wallHitSound, string touchSound, float fullVolumeHitSpeed)
+    private static ImpactSounds Sounds(string name, string[] wallHitSounds, string[] touchSounds, float fullVolumeHitSpeed)
     {
         string path = Folder + name + ".asset";
         bool isNew = !System.IO.File.Exists(path);
         ImpactSounds sounds = SetupTools.Asset<ImpactSounds>(path);
         if (isNew)
         {
-            sounds.wallHitSound = wallHitSound;
-            sounds.touchSound = touchSound;
+            sounds.wallHitSounds = wallHitSounds;
+            sounds.touchSounds = touchSounds;
             sounds.fullVolumeHitSpeed = fullVolumeHitSpeed;
             UnityEditor.EditorUtility.SetDirty(sounds);
         }

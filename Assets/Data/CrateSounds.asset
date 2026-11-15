@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 082a0ce47210541c9b0ac0e45ffd3155, type: 3}
   m_Name: CrateSounds
   m_EditorClassIdentifier: Assembly-CSharp::ImpactSounds
-  wallHitSound: CrateHit
-  touchSound: CrateTouch
+  wallHitSounds:
+  - CrateHit1
+  - CrateHit2
+  touchSounds:
+  - CrateTouch
   silentBelowSpeed: 0.3
   fullVolumeHitSpeed: 2
   fullVolumeTouchSpeed: 3.2

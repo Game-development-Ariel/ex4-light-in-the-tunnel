@@ -7,11 +7,11 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Tunnel/Impact Sounds")]
 public class ImpactSounds : ScriptableObject
 {
-    [Tooltip("Played when the object bangs into a wall. The name of a sound in Resources/Audio")]
-    public string wallHitSound = "CrateHit";
+    [Tooltip("Played when the object bangs into a wall, one of them at random. Names of sounds in Resources/Audio")]
+    public string[] wallHitSounds = { "CrateHit1" };
 
-    [Tooltip("Played when the player walks into the object. The name of a sound in Resources/Audio")]
-    public string touchSound = "CrateTouch";
+    [Tooltip("Played when the player walks into the object, one of them at random. Names of sounds in Resources/Audio")]
+    public string[] touchSounds = { "CrateTouch" };
 
     [Tooltip("Wall hits slower than this, in units per second, make no sound")]
     public float silentBelowSpeed = 0.3f;

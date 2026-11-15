@@ -37,7 +37,7 @@ public class ImpactNoise : MonoBehaviour, IPushable
             return;
         }
 
-        Play(sounds.wallHitSound, sounds.VolumeFor(speed, sounds.fullVolumeHitSpeed), ref nextHitTime);
+        Play(PickOne(sounds.wallHitSounds), sounds.VolumeFor(speed, sounds.fullVolumeHitSpeed), ref nextHitTime);
         if (!warned && speed >= warnAboveSpeed)
         {
             warned = true;
@@ -47,7 +47,13 @@ public class ImpactNoise : MonoBehaviour, IPushable
 
     public void PushStarted(float playerSpeed)
     {
-        Play(sounds.touchSound, sounds.VolumeFor(playerSpeed, sounds.fullVolumeTouchSpeed), ref nextTouchTime);
+        Play(PickOne(sounds.touchSounds), sounds.VolumeFor(playerSpeed, sounds.fullVolumeTouchSpeed), ref nextTouchTime);
+    }
+
+    // A random one of a few recordings, so the same bump doesn't sound exactly the same every time.
+    private static string PickOne(string[] names)
+    {
+        return names[Random.Range(0, names.Length)];
     }
 
     // Each sound has its own timer, so touching a crate doesn't silence the bang right after it.
