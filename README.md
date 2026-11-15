@@ -8,7 +8,7 @@
 
 ## קישורים
 
-* המשחק באיץ': יתווסף אחרי ההעלאה
+* המשחק באיץ' (אפשר לשחק בדפדפן): [game-dev-ariel.itch.io/ex4-light-in-the-tunnel](https://game-dev-ariel.itch.io/ex4-light-in-the-tunnel)
 * דיווח על שימוש בבינה מלאכותית: [AI_REPORT.md](AI_REPORT.md)
 
 ## איך מריצים
