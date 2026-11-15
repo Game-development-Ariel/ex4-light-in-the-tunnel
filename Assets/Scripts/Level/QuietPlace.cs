@@ -23,10 +23,14 @@ public class QuietPlace : MonoBehaviour
 
     private float stillTime;
 
+    // Destroy happens only at the end of the frame, and a slow frame has more than one physics step,
+    // so without this the verse could give its hope twice.
+    private bool prayed;
+
     private void OnTriggerStay(Collider other)
     {
         Hope playerHope = other.GetComponent<Hope>();
-        if (playerHope == null)
+        if (playerHope == null || prayed)
         {
             return;
         }
@@ -35,6 +39,7 @@ public class QuietPlace : MonoBehaviour
         stillTime = isStill ? stillTime + Time.fixedDeltaTime : 0f; // OnTriggerStay runs once every physics step.
         if (stillTime >= stillSeconds)
         {
+            prayed = true;
             playerHope.Add(hopeGained);
             memoryFound.Raise(verse);
             Destroy(gameObject);
