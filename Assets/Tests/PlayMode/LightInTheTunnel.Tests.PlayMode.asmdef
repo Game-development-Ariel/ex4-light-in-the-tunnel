@@ -1,0 +1,28 @@
+{
+    "name": "LightInTheTunnel.Tests.PlayMode",
+    "rootNamespace": "",
+    "references": [
+        "LightInTheTunnel",
+        "LightInTheTunnel.Tests.Common",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "UnityEngine.UI",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
