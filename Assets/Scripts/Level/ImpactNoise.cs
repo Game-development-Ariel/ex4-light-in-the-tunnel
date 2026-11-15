@@ -1,17 +1,21 @@
 using UnityEngine;
 
 /// <summary>
-/// A loose object that makes noise when it bangs into a wall. The first loud bang also raises a thought,
-/// to teach the player to push slowly. Needs a Rigidbody.
+/// The noise a loose object makes: a bang when it hits a wall, and a softer sound when the player pushes it.
+/// Both get louder with the speed. The first loud bang also raises a thought, to teach the player to push slowly.
+/// Needs a Rigidbody.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
-public class ImpactNoise : MonoBehaviour
+public class ImpactNoise : MonoBehaviour, IPushable
 {
-    [Tooltip("Hits slower than this, in units per second, are silent")]
-    [SerializeField] private float loudSpeed = 1.2f;
+    [Tooltip("Which sounds this object makes, and how loud")]
+    [SerializeField] private ImpactSounds sounds;
 
-    [Tooltip("Seconds before the same object can make noise again")]
-    [SerializeField] private float quietSeconds = 1f;
+    [Tooltip("Seconds before the same sound can play again, so one bump doesn't play it many times")]
+    [SerializeField] private float quietSeconds = 0.3f;
+
+    [Tooltip("A wall hit at this speed or faster raises the warning thought (the first time only)")]
+    [SerializeField] private float warnAboveSpeed = 1.2f;
 
     [TextArea]
     [SerializeField] private string warning = "Too loud. I push slowly, so nobody hears.";
@@ -19,7 +23,8 @@ public class ImpactNoise : MonoBehaviour
     [Tooltip("Raised with the warning, the first time only")]
     [SerializeField] private TextEvent hintRequested;
 
-    private float nextNoiseTime;
+    private float nextHitTime;
+    private float nextTouchTime;
     private bool warned;
 
     private void OnCollisionEnter(Collision collision)
@@ -27,17 +32,32 @@ public class ImpactNoise : MonoBehaviour
         // Only a hit against something that doesn't move (a wall) is loud. Another crate or the player is soft.
         bool hitWall = collision.rigidbody == null && collision.collider.GetComponent<CharacterController>() == null;
         float speed = collision.relativeVelocity.magnitude;
-        if (!hitWall || speed < loudSpeed || Time.time < nextNoiseTime)
+        if (!hitWall || speed < sounds.silentBelowSpeed)
         {
             return;
         }
 
-        nextNoiseTime = Time.time + quietSeconds;
-        Sfx.Play("Step1", Mathf.Clamp01(speed / (loudSpeed * 3f)));
-        if (!warned)
+        Play(sounds.wallHitSound, sounds.VolumeFor(speed, sounds.fullVolumeHitSpeed), ref nextHitTime);
+        if (!warned && speed >= warnAboveSpeed)
         {
             warned = true;
             hintRequested.Raise(warning);
         }
+    }
+
+    public void PushStarted(float playerSpeed)
+    {
+        Play(sounds.touchSound, sounds.VolumeFor(playerSpeed, sounds.fullVolumeTouchSpeed), ref nextTouchTime);
+    }
+
+    // Each sound has its own timer, so touching a crate doesn't silence the bang right after it.
+    private void Play(string sound, float volume, ref float nextTime)
+    {
+        if (Time.time < nextTime)
+        {
+            return;
+        }
+        nextTime = Time.time + quietSeconds;
+        Sfx.Play(sound, volume);
     }
 }

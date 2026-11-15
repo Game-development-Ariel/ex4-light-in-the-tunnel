@@ -13186,8 +13186,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3164d88d560ddba4d8c33e82b2accec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpactNoise
-  loudSpeed: 1.2
-  quietSeconds: 1
+  sounds: {fileID: 11400000, guid: 999c24fc33fdf4b9f98e990185c1a426, type: 2}
+  quietSeconds: 0.3
+  warnAboveSpeed: 1.2
   warning: Too loud. I push slowly, so nobody hears.
   hintRequested: {fileID: 11400000, guid: c07f8f93dcd6e4645a1309bdddfa7b10, type: 2}
 --- !u!54 &628734444
@@ -87416,8 +87417,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3164d88d560ddba4d8c33e82b2accec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpactNoise
-  loudSpeed: 1.2
-  quietSeconds: 1
+  sounds: {fileID: 11400000, guid: 8f3b1fb5d314b4ac2983ef3ccae58d40, type: 2}
+  quietSeconds: 0.3
+  warnAboveSpeed: 1.2
   warning: Too loud. I push slowly, so nobody hears.
   hintRequested: {fileID: 11400000, guid: c07f8f93dcd6e4645a1309bdddfa7b10, type: 2}
 --- !u!54 &1597691436
@@ -92367,8 +92369,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3164d88d560ddba4d8c33e82b2accec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpactNoise
-  loudSpeed: 1.2
-  quietSeconds: 1
+  sounds: {fileID: 11400000, guid: 8f3b1fb5d314b4ac2983ef3ccae58d40, type: 2}
+  quietSeconds: 0.3
+  warnAboveSpeed: 1.2
   warning: Too loud. I push slowly, so nobody hears.
   hintRequested: {fileID: 11400000, guid: c07f8f93dcd6e4645a1309bdddfa7b10, type: 2}
 --- !u!54 &1642988496
@@ -92824,8 +92827,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3164d88d560ddba4d8c33e82b2accec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpactNoise
-  loudSpeed: 1.2
-  quietSeconds: 1
+  sounds: {fileID: 11400000, guid: 999c24fc33fdf4b9f98e990185c1a426, type: 2}
+  quietSeconds: 0.3
+  warnAboveSpeed: 1.2
   warning: Too loud. I push slowly, so nobody hears.
   hintRequested: {fileID: 11400000, guid: c07f8f93dcd6e4645a1309bdddfa7b10, type: 2}
 --- !u!54 &1911771345

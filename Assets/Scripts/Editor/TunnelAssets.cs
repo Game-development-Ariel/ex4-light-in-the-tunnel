@@ -18,6 +18,28 @@ public static class TunnelAssets
     public static VisionStats CameraVision => SetupTools.Asset<VisionStats>(Folder + "SecurityCameraVision.asset");
     public static HopeEffects HopeEffects => SetupTools.Asset<HopeEffects>(Folder + "HopeEffects.asset");
 
+    /// <summary>A crate is light, so it gets fast and needs a faster hit to be at full volume.</summary>
+    public static ImpactSounds CrateSounds => Sounds("CrateSounds", "CrateHit", "CrateTouch", 2f);
+
+    /// <summary>A sandbag is heavy and slow, so a slower hit is already a loud one.</summary>
+    public static ImpactSounds SandbagSounds => Sounds("SandbagSounds", "SandbagHit", "SandbagTouch", 1.4f);
+
+    // The values are written only when the asset is new, so tuning it in the Inspector is kept.
+    private static ImpactSounds Sounds(string name, string wallHitSound, string touchSound, float fullVolumeHitSpeed)
+    {
+        string path = Folder + name + ".asset";
+        bool isNew = !System.IO.File.Exists(path);
+        ImpactSounds sounds = SetupTools.Asset<ImpactSounds>(path);
+        if (isNew)
+        {
+            sounds.wallHitSound = wallHitSound;
+            sounds.touchSound = touchSound;
+            sounds.fullVolumeHitSpeed = fullVolumeHitSpeed;
+            UnityEditor.EditorUtility.SetDirty(sounds);
+        }
+        return sounds;
+    }
+
     /// <summary>The camera in the storage room sees a shorter distance, so the room's entrance is safe.</summary>
     public static VisionStats RoomCameraVision => Vision("RoomCameraVision", 40f, 5f);
 

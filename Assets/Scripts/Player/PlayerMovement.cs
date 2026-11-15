@@ -40,6 +40,9 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 moveInput;
 
+    /// <summary>How fast the player is walking right now: 0 when standing, less when the joystick is only tilted a little.</summary>
+    public float WalkingSpeed => Mathf.Min(moveInput.magnitude, 1f) * CurrentSpeed;
+
     /// <summary>
     /// Adds the default keys, so the action works without setting it in the Inspector.
     /// Unity runs this in the editor when the component is loaded or changed.

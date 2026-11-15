@@ -36,7 +36,7 @@
 | Rigidbody | ארגזים, שקי חול ודלת התא | [TutorialMapBuilder.cs](Assets/Scripts/Editor/TutorialMapBuilder.cs) (הפונקציה `BuildLooseObjects`) |
 | AddForce | השחקן דוחף בכוח שמופעל בנקודת המגע (`AddForceAtPosition`), ולכן ארגז גם מסתובב | [PlayerPush.cs](Assets/Scripts/Player/PlayerPush.cs) |
 | Raycast | המצלמות והשומר: קרניים שנעצרות בקיר קובעות גם מה הם רואים וגם איך נראה קונוס האור. ארגז שנדחף עוצר אותן, אז אפשר להסתתר מאחוריו | [VisionSensor.cs](Assets/Scripts/Security/VisionSensor.cs) |
-| Collision | ארגז שנדחף בודק במה פגע ובאיזו מהירות. מכה חזקה בקיר עושה רעש | [ImpactNoise.cs](Assets/Scripts/Level/ImpactNoise.cs) |
+| Collision | ארגז או שק חול שנדחף בודק במה פגע ובאיזו מהירות. מכה בקיר עושה רעש, וככל שהיא מהירה יותר הרעש חזק יותר. לכל סוג יש צלילים משלו, בנכס [ImpactSounds](Assets/Scripts/Level/ImpactSounds.cs) | [ImpactNoise.cs](Assets/Scripts/Level/ImpactNoise.cs) |
 | מחבר (רשות) | דלת התא תלויה על HingeJoint ונפתחת כשנשענים עליה | [TutorialMapBuilder.cs](Assets/Scripts/Editor/TutorialMapBuilder.cs) (הפונקציה `CreateHingedDoor`) |
 
 המנהרה מצוירת בדו-ממד, אבל הפיסיקה תלת-ממדית: לכל קיר שנוגע ברצפה יש BoxCollider, והכול זז על מישור X-Y. ההסבר בהחלטה 2 למטה.
@@ -51,7 +51,7 @@ Assets/
 │   ├── Player/     PlayerMovement, PlayerPush, PlayerRespawn, Hope, HopeSenses, HopeEffects, BottleCarrier
 │   ├── Security/   VisionSensor, VisionStats, VisionConeMesh, CameraSweep, CameraIndicators, GuardPatrol, HeardSteps
 │   ├── Items/      WaterBottle, BottleSpawner, MattressGoal
-│   ├── Level/      HintZone, MemoryZone, QuietPlace, ImpactNoise
+│   ├── Level/      HintZone, MemoryZone, QuietPlace, ImpactNoise, ImpactSounds, IPushable
 │   ├── Game/       TunnelRound, TunnelLevelSettings
 │   ├── Events/     GameEvent, TextEvent   (ScriptableObject)
 │   ├── UI/         StatusHud, HintToast, MemoryCaption, TitleCard, EndScreen, ObjectiveMarker, Minimap, ...
@@ -100,6 +100,9 @@ flowchart LR
     PlayerCaught ==> ScreenShake
 
     PlayerPush -- AddForceAtPosition --> Pushable[Crate / Sandbag / Cell Door: Rigidbody]
+    PlayerPush -- PushStarted --> IPushable{{IPushable}}
+    IPushable --- ImpactNoise
+    ImpactNoise -- reads --> ImpactSounds
     WaterBottle -- PickUp --> BottleCarrier
     MattressGoal -- HasBottle, Drop --> BottleCarrier
     BottleCarrier ==> BottlePicked([BottlePicked]) ==> StatusHud
@@ -161,6 +164,8 @@ flowchart LR
 3. הוספנו אותו למפה ב-[TutorialMapBuilder.cs](Assets/Scripts/Editor/TutorialMapBuilder.cs).
 
 שום קובץ אחר לא השתנה, כי השומר מרים את אותו `PlayerCaught`, וכל מה שקורה כשנתפסים (תקווה, חזרה לתא, בקבוק, מסך, צליל) כבר מאזין לו. גם Tension, שמגביר את הדופק ליד סכנה, מחפש כל VisionSensor ולא "מצלמה". המצלמה השנייה במחסן היא אפילו פחות מזה: רק נכס VisionStats נוסף ותו במפה. אויב מסוג אחר לגמרי, למשל כלב ששומע במקום לראות, יצטרך סקריפט חיישן משלו שמרים את אותו אירוע.
+
+**חפץ חדש שאפשר לדחוף**, למשל חבית: נכס [ImpactSounds](Assets/Scripts/Level/ImpactSounds.cs) חדש עם הצלילים שלה, שני קובצי צליל ב-`Assets/Resources/Audio`, ושורה ב-[TutorialMapBuilder.cs](Assets/Scripts/Editor/TutorialMapBuilder.cs). PlayerPush לא משתנה, כי הוא מכיר רק את הממשק [IPushable](Assets/Scripts/Level/IPushable.cs), ולא יודע אם זה ארגז או חבית.
 
 **חפץ חדש**, למשל זיכרון נוסף: עוד שורה ב-[GameFeelSetup.cs](Assets/Scripts/Editor/GameFeelSetup.cs) שמוסיפה MemoryZone עם טקסט וכמות תקווה. בלי קוד חדש.
 

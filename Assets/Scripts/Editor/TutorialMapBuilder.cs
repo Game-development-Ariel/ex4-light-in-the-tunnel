@@ -248,10 +248,10 @@ public static class TutorialMapBuilder
                 switch (LAYOUT[row][column])
                 {
                     case 'X':
-                        CreatePushable("Crate", parent, center, new Vector2(0.9f, 0.9f), crateSprite, Color.white, 3f);
+                        CreatePushable("Crate", parent, center, new Vector2(0.9f, 0.9f), crateSprite, Color.white, 3f, TunnelAssets.CrateSounds);
                         break;
                     case 'G':
-                        CreatePushable("Sandbag", parent, center, new Vector2(0.8f, 0.55f), SceneParts.Square, SandColor, 5f);
+                        CreatePushable("Sandbag", parent, center, new Vector2(0.8f, 0.55f), SceneParts.Square, SandColor, 5f, TunnelAssets.SandbagSounds);
                         break;
                     case 'H':
                         CreateHingedDoor(parent, center);
@@ -261,14 +261,16 @@ public static class TutorialMapBuilder
         }
     }
 
-    private static void CreatePushable(string name, Transform parent, Vector3 center, Vector2 size, Sprite sprite, Color color, float mass)
+    private static void CreatePushable(string name, Transform parent, Vector3 center, Vector2 size, Sprite sprite, Color color, float mass, ImpactSounds sounds)
     {
         GameObject pushable = CreateSpriteBox(name, parent, center, size, sprite, color);
         Rigidbody body = AddFlatRigidbody(pushable, mass);
         body.linearDamping = 5f; // Like friction with the floor: it stops soon after the push ends.
         body.angularDamping = 5f;
         body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
-        SetupTools.SetField(pushable.AddComponent<ImpactNoise>(), "hintRequested", TunnelAssets.HintRequested);
+        ImpactNoise noise = pushable.AddComponent<ImpactNoise>();
+        SetupTools.SetField(noise, "hintRequested", TunnelAssets.HintRequested);
+        SetupTools.SetField(noise, "sounds", sounds);
     }
 
     /// <summary>The door fills the doorway and turns around its top end, where the hinge joint holds it to the wall.</summary>
