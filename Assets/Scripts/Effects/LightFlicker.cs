@@ -14,6 +14,18 @@ public class LightFlicker : MonoBehaviour
     [Tooltip("On average, seconds between two dips")]
     [SerializeField] private float secondsBetweenDips = 7f;
 
+    [Tooltip("How fast the shimmer changes")]
+    [SerializeField] private float shimmerSpeed = 3f;
+
+    [Tooltip("How bright the bulb is during a dip. 0.15 = 15 percent of its normal light")]
+    [SerializeField] private float dipBrightness = 0.15f;
+
+    [Tooltip("Seconds a dip lasts")]
+    [SerializeField] private float dipSeconds = 0.12f;
+
+    [Tooltip("The first dip comes at the earliest after this many seconds")]
+    [SerializeField] private float firstDipAfter = 2f;
+
     private Light2D bulb;
     private float baseIntensity;
     private float seed;
@@ -24,20 +36,20 @@ public class LightFlicker : MonoBehaviour
         bulb = GetComponent<Light2D>();
         baseIntensity = bulb.intensity;
         seed = Random.value * 100f; // Each bulb flickers differently.
-        dipTimer = Random.Range(2f, secondsBetweenDips * 2f);
+        dipTimer = Random.Range(firstDipAfter, secondsBetweenDips * 2f);
     }
 
     private void Update()
     {
         // Perlin noise changes smoothly, so the shimmer looks natural and not random jumps.
-        float noise = Mathf.PerlinNoise(seed, Time.time * 3f) - 0.5f;
+        float noise = Mathf.PerlinNoise(seed, Time.time * shimmerSpeed) - 0.5f;
         float intensity = baseIntensity * (1f + noise * 2f * shimmer);
 
         dipTimer -= Time.deltaTime;
         if (dipTimer < 0f)
         {
-            intensity *= 0.15f; // The dip lasts a few frames.
-            if (dipTimer < -0.12f)
+            intensity *= dipBrightness;
+            if (dipTimer < -dipSeconds)
             {
                 dipTimer = Random.Range(secondsBetweenDips * 0.5f, secondsBetweenDips * 1.5f);
             }
