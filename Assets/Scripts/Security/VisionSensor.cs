@@ -53,6 +53,10 @@ public class VisionSensor : MonoBehaviour
 
         Vector2 toTarget = target.position - transform.position;
         float distance = toTarget.magnitude;
+        if (distance < 0.001f)
+        {
+            return true; // Right on the sensor. There is no direction to check, and nothing can hide it.
+        }
         bool insideCone = distance <= stats.viewDistance && Vector2.Angle(transform.up, toTarget) <= stats.viewAngle / 2f;
         if (!insideCone)
         {

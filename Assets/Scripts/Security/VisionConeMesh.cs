@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Draws on the floor what a VisionSensor sees: a cone built from rays that stop at the first wall.
-/// So if the cone touches the player, the player is caught, and behind a wall there is no cone and no danger.
+/// So the cone shows where the player would be seen, and behind a wall there is no cone and no danger.
 /// The cone is a fan of triangles: vertex 0 is the sensor, and the others are the ends of the rays.
 /// </summary>
 [RequireComponent(typeof(MeshFilter))]
@@ -11,6 +11,7 @@ public class VisionConeMesh : MonoBehaviour
     [SerializeField] private VisionSensor sensor;
 
     [Tooltip("How many rays build the cone. More rays = the cone follows the walls more exactly")]
+    [Min(2)]
     [SerializeField] private int rayCount = 40;
 
     [Tooltip("A cold, pale light: the camera is a machine, not a lamp")]
