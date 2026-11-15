@@ -8,27 +8,47 @@ using UnityEngine.UI;
 /// The screen after the level, built like the last shot of a film: darkness, then a beam of light from above
 /// (the "light in the tunnel"), the day's title, the hero's last thoughts written one by one,
 /// and the results of the day. It waits for the "level won" or "level lost" event, and then covers the level.
-/// The UI is created here in code.
+/// It only shows: LevelFreeze is the one that stops the level. The UI is created here in code.
 /// </summary>
 public class EndScreen : MonoBehaviour
 {
     // Above everything else in the level, below the scene fader.
     private const int CanvasSortingOrder = 60;
 
-    private static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
-
+    [Header("The words")]
+    [SerializeField] private string title = "Day 1";
+    [SerializeField] private string winSubtitle = "I made it through the first day.";
+    [SerializeField] private string loseSubtitle = "Not today.";
     [SerializeField] private string[] winThoughts = { "I drank slowly. Small sips.", "Somewhere above, people are looking for us.", "Tomorrow I'll look for the way out." };
     [SerializeField] private string[] loseThoughts = { "The darkness was too heavy today.", "I'll rest. Tomorrow I'll try again." };
+
+    [Header("Timing, in seconds")]
+    [SerializeField] private float beamSeconds = 4f;
+    [SerializeField] private float afterBeam = 1.2f;
+    [SerializeField] private float titleFade = 1.6f;
+    [SerializeField] private float subtitleFade = 1.2f;
+    [SerializeField] private float afterTitle = 0.6f;
+    [SerializeField] private float lettersPerSecond = 26f;
+    [SerializeField] private float betweenThoughts = 0.7f;
+    [SerializeField] private float resultsFade = 1.2f;
+
+    [Header("The light")]
+    [Tooltip("How bright the beam gets after a win, and after a loss. The brighter the ending, the more light comes in")]
+    [SerializeField] private Vector2 beamBrightness = new Vector2(0.4f, 0.12f);
+
+    [SerializeField] private float endSoundVolume = 0.9f;
 
     [Header("Listens to")]
     [SerializeField] private GameEvent levelWon;
     [SerializeField] private GameEvent levelLost;
 
     [Header("Where the results come from")]
-    [SerializeField] private TunnelRound round;
+    [Tooltip("The fade to black takes endFadeSeconds, the time LevelFreeze waits before it stops the level")]
+    [SerializeField] private TunnelLevelSettings settings;
+    [SerializeField] private RoundStats stats;
     [SerializeField] private Hope hope;
 
-    [Tooltip("Objects that are turned off when the level ends: the player, the sounds, the HUD")]
+    [Tooltip("UI under the end screen that is hidden once the screen is black, so it doesn't keep talking")]
     [SerializeField] private GameObject[] hideWhenLevelEnds;
 
     private Transform canvas;
@@ -62,37 +82,36 @@ public class EndScreen : MonoBehaviour
         Image background = UiFactory.CreateImage(canvas, "Background", null, new Color(0.02f, 0.02f, 0.03f, 0f));
         UiFactory.Stretch(background.rectTransform);
         background.raycastTarget = true;
-        yield return UiAnim.FadeGraphic(background, 1f, 0.8f);
+        yield return UiAnim.FadeGraphic(background, 1f, settings.endFadeSeconds);
 
-        foreach (GameObject levelObject in hideWhenLevelEnds)
+        foreach (GameObject ui in hideWhenLevelEnds)
         {
-            levelObject.SetActive(false);
+            ui.SetActive(false);
         }
-        Sfx.Play(won ? "Win" : "Lose", 0.9f);
+        Sfx.Play(won ? "Win" : "Lose", endSoundVolume);
 
-        // The beam: the brighter the ending, the more light comes in.
         Image beam = UiFactory.CreateImage(canvas, "Beam", UiTheme.Sprite("Beam"), new Color(1f, 1f, 1f, 0f));
         UiFactory.Place(beam.rectTransform, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(900f, 1100f));
-        StartCoroutine(UiAnim.FadeGraphic(beam, won ? 0.4f : 0.12f, 4f));
+        StartCoroutine(UiAnim.FadeGraphic(beam, won ? beamBrightness.x : beamBrightness.y, beamSeconds));
         Image vignette = UiFactory.CreateImage(canvas, "Vignette", UiTheme.Sprite("Vignette"), Color.white);
         UiFactory.Stretch(vignette.rectTransform);
-        yield return new WaitForSeconds(1.2f);
+        yield return new WaitForSeconds(afterBeam);
 
-        Text title = AddCentered(UiFactory.CreateTitle(canvas, "Title", Center, new Vector2(1400f, 140f), 104, UiTheme.TextColor), 300f);
-        Text subtitle = AddCentered(UiFactory.CreateTitle(canvas, "Subtitle", Center, new Vector2(1400f, 70f), 44, UiTheme.TextColor), 210f);
-        subtitle.font = UiTheme.ItalicFont;
-        title.text = "Day 1";
-        subtitle.text = won ? "I made it through the first day." : "Not today.";
-        yield return FadeIn(title, 1.6f);
-        yield return FadeIn(subtitle, 1.2f);
-        yield return new WaitForSeconds(0.6f);
+        Text titleText = AddCentered(UiFactory.CreateTitle(canvas, "Title", UiFactory.Center, new Vector2(1400f, 140f), 104, UiTheme.TextColor), 300f);
+        Text subtitleText = AddCentered(UiFactory.CreateTitle(canvas, "Subtitle", UiFactory.Center, new Vector2(1400f, 70f), 44, UiTheme.TextColor), 210f);
+        subtitleText.font = UiTheme.ItalicFont;
+        titleText.text = title;
+        subtitleText.text = won ? winSubtitle : loseSubtitle;
+        yield return FadeIn(titleText, titleFade);
+        yield return FadeIn(subtitleText, subtitleFade);
+        yield return new WaitForSeconds(afterTitle);
 
         string[] thoughts = won ? winThoughts : loseThoughts;
         for (int i = 0; i < thoughts.Length; i++)
         {
-            Text line = AddCentered(UiFactory.CreateText(canvas, "Thought", Center, new Vector2(1400f, 50f), 34, TextAnchor.MiddleCenter), 70f - i * 58f);
-            yield return UiAnim.Typewriter(line, thoughts[i], 26f);
-            yield return new WaitForSeconds(0.7f);
+            Text line = AddCentered(UiFactory.CreateText(canvas, "Thought", UiFactory.Center, new Vector2(1400f, 50f), 34, TextAnchor.MiddleCenter), 70f - i * 58f);
+            yield return UiAnim.Typewriter(line, thoughts[i], lettersPerSecond);
+            yield return new WaitForSeconds(betweenThoughts);
         }
 
         yield return ShowResults(-170f);
@@ -103,12 +122,12 @@ public class EndScreen : MonoBehaviour
 
     private IEnumerator ShowButton(string label, float x, UnityAction onClick)
     {
-        Button button = UiFactory.CreateButton(canvas, label, Center, new Vector2(380f, 84f), 40, Color.white);
+        Button button = UiFactory.CreateButton(canvas, label, UiFactory.Center, new Vector2(380f, 84f), 40, Color.white);
         ((RectTransform)button.transform).anchoredPosition = new Vector2(x, -320f);
         button.onClick.AddListener(onClick);
         var group = button.gameObject.AddComponent<CanvasGroup>();
         group.alpha = 0f;
-        yield return UiAnim.Fade(group, 1f, 1.2f);
+        yield return UiAnim.Fade(group, 1f, resultsFade);
     }
 
     /// <summary>
@@ -117,52 +136,37 @@ public class EndScreen : MonoBehaviour
     /// </summary>
     private IEnumerator ShowResults(float y)
     {
-        RectTransform row = CreateRow(canvas, "Results", 70f);
-        UiFactory.Place(row, Center, new Vector2(0f, y), new Vector2(1200f, 60f));
-        row.pivot = Center;
+        RectTransform row = UiFactory.CreateRow(canvas, "Results", 70f);
+        UiFactory.Place(row, UiFactory.Center, new Vector2(0f, y), new Vector2(1200f, 60f));
+        row.pivot = UiFactory.Center;
 
-        string seen = round.Captures == 0 ? "never seen" : round.Captures == 1 ? "seen once" : $"seen {round.Captures} times";
+        string seen = stats.Captures == 0 ? "never seen" : stats.Captures == 1 ? "seen once" : $"seen {stats.Captures} times";
         AddResult(row, "Hope", $"hope {hope.Current}");
         AddResult(row, "Eye", seen);
-        AddResult(row, "Clock", $"{round.Seconds:0} seconds");
+        AddResult(row, "Clock", $"{stats.Seconds:0} seconds");
 
         var group = row.gameObject.AddComponent<CanvasGroup>();
         group.alpha = 0f;
-        yield return UiAnim.Fade(group, 1f, 1.2f);
+        yield return UiAnim.Fade(group, 1f, resultsFade);
     }
 
     private static void AddResult(Transform row, string icon, string value)
     {
-        RectTransform item = CreateRow(row, icon, 14f);
+        RectTransform item = UiFactory.CreateRow(row, icon, 14f);
 
         Image image = UiFactory.CreateIcon(item, icon, new Vector2(40f, 40f));
         image.color = new Color(1f, 1f, 1f, 0.75f);
 
-        Text text = UiFactory.CreateText(item, icon + " Value", Center, new Vector2(0f, 50f), 30, TextAnchor.MiddleLeft);
+        Text text = UiFactory.CreateText(item, icon + " Value", UiFactory.Center, new Vector2(0f, 50f), 30, TextAnchor.MiddleLeft);
         text.horizontalOverflow = HorizontalWrapMode.Overflow;
         text.color = UiTheme.Muted;
         text.text = value;
         text.gameObject.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
     }
 
-    /// <summary>An object that lines up its children from left to right, centered, with a gap between them.</summary>
-    private static RectTransform CreateRow(Transform parent, string name, float spacing)
-    {
-        var rowObject = new GameObject(name, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
-        rowObject.transform.SetParent(parent, false);
-        var layout = rowObject.GetComponent<HorizontalLayoutGroup>();
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = spacing;
-        layout.childControlWidth = false;
-        layout.childControlHeight = false;
-        layout.childForceExpandWidth = false;
-        rowObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        return rowObject.GetComponent<RectTransform>();
-    }
-
     private static Text AddCentered(Text text, float y)
     {
-        text.rectTransform.pivot = Center;
+        text.rectTransform.pivot = UiFactory.Center;
         text.rectTransform.anchoredPosition = new Vector2(0f, y);
         return text;
     }

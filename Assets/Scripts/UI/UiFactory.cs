@@ -15,6 +15,10 @@ public static class UiFactory
     // 0.5 = scale by both width and height equally, so it works in landscape and portrait.
     private const float WidthHeightMatch = 0.5f;
 
+    /// <summary>Anchor points of a parent: the middle, and the top-left corner.</summary>
+    public static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
+    public static readonly Vector2 TopLeft = new Vector2(0f, 1f);
+
     public static Canvas CreateCanvas(string name, int sortingOrder)
     {
         var canvasObject = new GameObject(name, typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -104,16 +108,34 @@ public static class UiFactory
         background.color = color;
         background.raycastTarget = true; // Buttons must catch clicks and touches.
         Place(background.rectTransform, anchor, Vector2.zero, size);
-        background.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        background.rectTransform.pivot = Center;
 
         var button = background.gameObject.AddComponent<Button>();
         button.transition = Selectable.Transition.None; // ButtonFeel animates it instead of changing colors.
         background.gameObject.AddComponent<ButtonFeel>();
 
-        Text text = CreateTitle(background.transform, "Label", new Vector2(0.5f, 0.5f), size, fontSize, UiTheme.TextColor);
-        text.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        Text text = CreateTitle(background.transform, "Label", Center, size, fontSize, UiTheme.TextColor);
+        text.rectTransform.pivot = Center;
         text.text = label;
         return button;
+    }
+
+    /// <summary>
+    /// An object that lines up its children from left to right, centered, with a gap between them.
+    /// It sizes itself to its children, so the row stays centered however many there are.
+    /// </summary>
+    public static RectTransform CreateRow(Transform parent, string name, float spacing)
+    {
+        var rowObject = new GameObject(name, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
+        rowObject.transform.SetParent(parent, false);
+        var layout = rowObject.GetComponent<HorizontalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = spacing;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false; // Keeps the children together in the middle.
+        rowObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        return rowObject.GetComponent<RectTransform>();
     }
 
     /// <summary>

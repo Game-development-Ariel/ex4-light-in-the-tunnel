@@ -27,8 +27,8 @@ public class MemoryCaption : MonoBehaviour
         group.alpha = 0f;
         group.blocksRaycasts = false;
 
-        text = UiFactory.CreateTitle(canvas.transform, "Memory", new Vector2(0.5f, 0.5f), new Vector2(1300f, 200f), 46, UiTheme.Hope);
-        text.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        text = UiFactory.CreateTitle(canvas.transform, "Memory", UiFactory.Center, new Vector2(1300f, 200f), 46, UiTheme.Hope);
+        text.rectTransform.pivot = UiFactory.Center;
         text.rectTransform.anchoredPosition = new Vector2(0f, 170f);
         text.font = UiTheme.ItalicFont;
     }

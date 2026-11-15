@@ -39,20 +39,12 @@ public class HintToast : MonoBehaviour
         Image band = UiFactory.CreateImage(canvas.transform, "Band", UiTheme.Sprite("Band"), Color.white);
         UiFactory.Place(band.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1500f, 150f));
 
-        message = UiFactory.CreateText(band.transform, "Message", new Vector2(0.5f, 0.5f), new Vector2(1250f, 140f), 34, TextAnchor.MiddleCenter);
-        message.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        message = UiFactory.CreateText(band.transform, "Message", UiFactory.Center, new Vector2(1250f, 140f), 34, TextAnchor.MiddleCenter);
+        message.rectTransform.pivot = UiFactory.Center;
 
-        var row = new GameObject("Keys", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        row.transform.SetParent(band.transform, false);
-        keyRow = row.GetComponent<RectTransform>();
+        keyRow = UiFactory.CreateRow(band.transform, "Keys", 10f);
         UiFactory.Place(keyRow, new Vector2(0.5f, 1f), new Vector2(0f, 45f), new Vector2(600f, KeySize));
-        keyRow.pivot = new Vector2(0.5f, 0.5f);
-        var layout = row.GetComponent<HorizontalLayoutGroup>();
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = 10f;
-        layout.childControlWidth = false;
-        layout.childControlHeight = false;
-        layout.childForceExpandWidth = false; // Keeps the keys together in the middle.
+        keyRow.pivot = UiFactory.Center;
     }
 
     private void OnEnable()
@@ -101,8 +93,8 @@ public class HintToast : MonoBehaviour
         {
             Image cap = UiFactory.CreatePanel(keyRow, "Key " + key, "Key");
             cap.rectTransform.sizeDelta = Vector2.one * KeySize;
-            Text label = UiFactory.CreateText(cap.transform, "Label", new Vector2(0.5f, 0.5f), Vector2.one * KeySize, 26, TextAnchor.MiddleCenter);
-            label.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            Text label = UiFactory.CreateText(cap.transform, "Label", UiFactory.Center, Vector2.one * KeySize, 26, TextAnchor.MiddleCenter);
+            label.rectTransform.pivot = UiFactory.Center;
             label.text = key;
         }
     }
