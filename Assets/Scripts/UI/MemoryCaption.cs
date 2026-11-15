@@ -38,9 +38,11 @@ public class MemoryCaption : MonoBehaviour
         memoryFound.Subscribe(OnMemoryFound);
     }
 
+    // Turning the object off stops its coroutines, so the next memory must start a new one.
     private void OnDisable()
     {
         memoryFound.Unsubscribe(OnMemoryFound);
+        isShowing = false;
     }
 
     private void OnMemoryFound(string memory)

@@ -41,4 +41,13 @@ public class QuietPlace : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    // Leaving the place breaks the moment, so coming back starts the count over.
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<Hope>() != null)
+        {
+            stillTime = 0f;
+        }
+    }
 }
