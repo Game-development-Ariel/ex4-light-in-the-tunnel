@@ -13,6 +13,8 @@ public abstract class TutorialSceneTest
 {
     protected const string SceneName = "Tutorial";
 
+    private float volumeBefore;
+
     protected PlayerMovement Player { get; private set; }
     protected Hope Hope { get; private set; }
     protected BottleCarrier Carrier { get; private set; }
@@ -36,6 +38,8 @@ public abstract class TutorialSceneTest
     {
         Time.timeScale = 1f;
         Time.captureFramerate = 60; // The same frame length every run, as in PlayModeTest.
+        volumeBefore = AudioListener.volume;
+        AudioListener.volume = 0f; // Silent: the music and the steps don't play through the speakers.
         yield return SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Single);
         yield return null;
         FindTheParts();
@@ -46,6 +50,7 @@ public abstract class TutorialSceneTest
     {
         Time.timeScale = 1f;
         Time.captureFramerate = 0;
+        AudioListener.volume = volumeBefore;
         // An empty scene for the next test, so its objects don't land in the Tutorial scene.
         Scene empty = SceneManager.CreateScene("Empty Test Scene " + Time.frameCount);
         SceneManager.SetActiveScene(empty);

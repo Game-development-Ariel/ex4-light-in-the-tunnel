@@ -12,6 +12,7 @@ using UnityEngine.TestTools;
 public abstract class PlayModeTest
 {
     private readonly List<Object> created = new List<Object>();
+    private float volumeBefore;
 
     /// <summary>
     /// Makes an object that is off. Components added to it don't run Awake until it is turned on,
@@ -44,6 +45,8 @@ public abstract class PlayModeTest
     {
         Time.timeScale = 1f;
         Time.captureFramerate = 60;
+        volumeBefore = AudioListener.volume;
+        AudioListener.volume = 0f; // Silent: the tests check what plays, not the speakers.
         Make("Listener").AddComponent<AudioListener>(); // Unity logs a warning when sounds play with no listener.
         yield return null;
     }
@@ -53,6 +56,7 @@ public abstract class PlayModeTest
     {
         Time.timeScale = 1f;
         Time.captureFramerate = 0;
+        AudioListener.volume = volumeBefore;
         foreach (Object thing in created)
         {
             if (thing != null)
