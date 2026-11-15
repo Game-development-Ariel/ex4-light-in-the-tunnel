@@ -13,7 +13,7 @@
 
 ## איך מריצים
 
-1. ב-Unity Hub פותחים את התיקייה `Light-in-the-Tunnel` (ולא את שורש המאגר), בגרסה 6000.3.25f1.
+1. ב-Unity Hub פותחים את התיקייה של המאגר, בגרסה 6000.3.25f1.
 2. פותחים את הסצנה `Assets/Scenes/Tutorial` ולוחצים Play.
 
 הסצנה נבנית מקוד, בכלים שב-`Assets/Scripts/Editor`. אחרי שינוי בכלים מריצים `Tools > Rebuild Scene`. בנייה לדפדפן: `Tools > Build WebGL`.
