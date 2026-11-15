@@ -48,7 +48,7 @@
 
 ```
 Assets/
-├── Scripts/
+├── Scripts/        LightInTheTunnel.asmdef (the game code)
 │   ├── Player/     PlayerMovement, PlayerPush, PlayerRespawn, Hope, HopeSenses, HopeThoughts, HopeEffects, BottleCarrier
 │   ├── Security/   VisionSensor, VisionStats, VisionConeMesh, CameraSweep, CameraIndicators, GuardPatrol, HeardSteps
 │   ├── Items/      WaterBottle, BottleSpawner, MattressGoal
@@ -61,7 +61,7 @@ Assets/
 │   ├── Effects/    MoodVolume, Tension, ScreenShake, LightFlicker, DustMotes, WalkBounce, Bob
 │   ├── Audio/      Footsteps, MusicPlayer, Sfx
 │   ├── Camera/     CameraFollow, OrientationCameraSize, ScreenSizeWatcher
-│   └── Editor/     the tools that build the scene:
+│   └── Editor/     the tools that build the scene (LightInTheTunnel.Editor.asmdef):
 │                   ProjectBuilder (Rebuild Scene, Build WebGL), TunnelAssets, SetupTools, SceneParts, PlaceholderSprites,
 │                   1 map:  TutorialMapBuilder, TutorialLayout, WallColliderBuilder, LooseObjectBuilder, WatcherBuilder
 │                   2 game: TunnelLevelSetup
@@ -70,6 +70,12 @@ Assets/
 │                   LevelWon, LevelLost, HintRequested, MemoryFound),
 │                   TutorialLevelSettings, HopeEffects, SecurityCameraVision, RoomCameraVision, GuardVision,
 │                   CrateSounds, SandbagSounds
+├── Tests/
+│   ├── Common/     TestUtils, TestData, EventSpy   (LightInTheTunnel.Tests.Common.asmdef)
+│   ├── EditMode/   Events, Player, Game, Level, Security, UI, Data, Scene, Architecture, EditorTools
+│   │               (LightInTheTunnel.Tests.EditMode.asmdef)
+│   └── PlayMode/   Scene, Player, Game, Items, Level, Security, UI, Effects, Audio, Camera, Helpers
+│                   (LightInTheTunnel.Tests.PlayMode.asmdef)
 ├── Prefabs/  Scenes/  Sprites/  Tiles/  Resources/  Settings/
 ```
 
@@ -248,6 +254,55 @@ PlayerPush, ImpactNoise ו-NoiseWarning לא משתנים. PlayerPush מכיר �
 | [ScreenFader](Assets/Scripts/UI/ScreenFader.cs) | `FadeAndLoad` סטטית ודגל `isFading` | המסך השחור חייב לשרוד את טעינת הסצנה כדי להתבהר אחריה. הדגל מונע טעינה כפולה. בפרויקט Play מתחיל בלי לטעון את הקוד מחדש (Enter Play Mode Options), אז `ResetStatics` עם `[RuntimeInitializeOnLoadMethod]` מאפס את הדגל בתחילת כל הרצה |
 | UiFactory, UiAnim, UiTheme | מחלקות סטטיות של פונקציות עזר וקבועים | אין בהן מצב, רק פונקציות שמקבלות קלט ומחזירות פלט |
 | `MobileJoystick.UsesTouch` | תכונה סטטית | שאלה על המכשיר ולא על אובייקט מסוים |
+
+## בדיקות
+
+**מריצים את כל הבדיקות לפני כל מיזוג (merge), וממזגים רק כשהכול ירוק.** כך שינוי לא שובר משהו בשקט.
+
+יש שני סוגים של בדיקות:
+
+* **EditMode** (בלי להפעיל את המשחק, כמה שניות): הלוגיקה עצמה (אירועים, תקווה, חוקי השלב, הבקבוק, עוצמת הצלילים, המחשבות על התקווה), נכסי הנתונים ב-`Assets/Data` (נטענים ומספרים הגיוניים), החיווט של הסצנה (אין סקריפט חסר ואין שדה הפניה ריק), וכלי העורך: `Rebuild Scene` רץ פעמיים, ובודקים שהסצנה שנבנתה תקינה, שבנייה שנייה לא מוסיפה אובייקטים, ושהיא זהה לסצנה שבמאגר. הקבצים שהכלים שומרים מוחזרים בסוף הבדיקה למצבם.
+* **PlayMode** (המשחק רץ, כחצי דקה): הסצנה האמיתית (נטענת ורצה בלי שגיאות, היתפסות, ניצחון, הפסד, Play again), וכל סקריפט בנפרד באובייקטים שנבנים בקוד: תנועה וקירות, הדחיפה (זהה ב-30 וב-120 פריימים בשנייה), ראייה דרך קיר, השומר, חלקי ה-HUD, מסך הסיום, האפקטים, הצלילים והמצלמה. כל פריים הוא 1/60 שנייה של זמן משחק (`Time.captureFramerate`), כך שהתוצאות זהות בכל הרצה. בזמן בדיקות PlayMode הקול מושתק (`AudioListener.volume = 0`), והבדיקות של הצלילים בודקות מה הופעל ולא מה נשמע.
+
+לכל תקלה שתוקנה בענף `cleanup` יש בדיקה עם שם התקלה, למשל `Push_IsTheSame_At30And120FramesPerSecond`, `CaughtAfterWin_ChangesNothing`, `IsWalking_IsFalse_WhenWalkingIntoAWall` ו-`MemoryCaption_TurnedOffAndOnAgain_StillShowsMemories`.
+
+**בדיקות ארכיטקטורה** (EditMode, בקובץ [ArchitectureTests.cs](Assets/Tests/EditMode/Architecture/ArchitectureTests.cs)) קוראות את הקוד ובודקות את הכללים של הקורס ושל ה-README:
+
+* קוד המשחק לא משתמש במחלקות של `UI`.
+* כל הרשמה לאירוע נעשית ב-`OnEnable` ומבוטלת ב-`OnDisable`.
+* אין סינגלטון, וכל משתנה סטטי שמחזיק מצב מופיע בטבלה של המשתנים הסטטיים למעלה ומתאפס בתחילת כל הרצה.
+* בכל קובץ טיפוס אחד, בשם הקובץ.
+* לכל מספר כוונון בקוד המשחק יש `[Tooltip]`, `[Range]` או `[Min]`, ועוצמות צלילים, זמני אנימציה וצבעים לא נכתבים כמספרים בתוך פונקציה.
+* ה-README מזכיר כל מחלקה וכל אירוע, ולכן תיעוד שלא עודכן נכשל.
+* הרווחים לפי `.editorconfig` (מה שבודק הקוד של הקורס דורש).
+
+**איך מריצים ב-Unity:** `Window > General > Test Runner`, בלשונית `EditMode` לוחצים `Run All`, ואחר כך באותו אופן בלשונית `PlayMode`.
+
+**איך מריצים משורת הפקודה** (Unity סגור), פעם עם `EditMode` ופעם עם `PlayMode`:
+
+<div dir="ltr">
+
+```
+/Applications/Unity/Hub/Editor/6000.3.25f1/Unity.app/Contents/MacOS/Unity -batchmode -projectPath . \
+  -runTests -testPlatform EditMode -testResults ../test-results/editmode.xml -logFile ../test-results/editmode.log
+```
+
+</div>
+
+לא מוסיפים `-quit`, יוניטי נסגר לבד בסוף. קוד היציאה 0 אומר שהכול עבר, ו-2 אומר שיש בדיקה שנכשלה. הפירוט בקובץ ה-XML.
+
+**כיסוי קוד:** החבילה Code Coverage מודדת כמה מקוד המשחק הבדיקות מריצות (היום כ-90% מהשורות). ב-Unity: `Window > Analysis > Code Coverage`, מסמנים `Enable Code Coverage`, מריצים את הבדיקות ולוחצים `Generate Report`. משורת הפקודה מוסיפים לשתי ההרצות:
+
+<div dir="ltr">
+
+```
+-enableCodeCoverage -coverageResultsPath ../coverage-tunnel
+-coverageOptions "generateHtmlReport;generateAdditionalMetrics;assemblyFilters:+LightInTheTunnel"
+```
+
+</div>
+
+הדוח נפתח מ-`../coverage-tunnel/Report/index.html`. התוצאות נשמרות מחוץ לפרויקט, כדי שלא ייכנסו לגיט.
 
 ## מה השתנה לעומת מסמך העיצוב
 
