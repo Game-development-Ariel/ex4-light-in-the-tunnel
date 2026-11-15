@@ -9,40 +9,33 @@ public class BottleSpawner : MonoBehaviour
     [Tooltip("The water bottle prefab")]
     [SerializeField] private GameObject bottlePrefab;
 
-    [SerializeField] private GameEvent playerCaught;
+    [Tooltip("Raised when the player loses the bottle. A new one is made then")]
+    [SerializeField] private GameEvent bottleDropped;
 
-    [Tooltip("The player's carrier. A new bottle is made only when the player doesn't hold one")]
-    [SerializeField] private BottleCarrier carrier;
-
-    // The bottle that is on the floor now. Null after the player picks it up.
+    // The bottle that is on the floor now. Null after the player picks it up (it destroys itself).
     private GameObject currentBottle;
+
+    /// <summary>The bottle on the floor, or null while the player carries it.</summary>
+    public Transform Bottle => currentBottle != null ? currentBottle.transform : null;
 
     private void OnEnable()
     {
-        playerCaught.Subscribe(SpawnNextFrame);
+        bottleDropped.Subscribe(Spawn);
     }
 
     private void OnDisable()
     {
-        playerCaught.Unsubscribe(SpawnNextFrame);
+        bottleDropped.Unsubscribe(Spawn);
     }
 
     private void Start()
     {
-        SpawnNextFrame();
+        Spawn();
     }
 
-    private void SpawnNextFrame()
-    {
-        // Checked on the next frame, after the carrier dropped the bottle and a picked-up bottle was destroyed.
-        Invoke(nameof(Spawn), 0f);
-    }
-
+    // The dropped bottle was picked up from here before, so there is no other bottle on the floor.
     private void Spawn()
     {
-        if (currentBottle == null && !carrier.HasBottle)
-        {
-            currentBottle = Instantiate(bottlePrefab, transform.position, Quaternion.identity);
-        }
+        currentBottle = Instantiate(bottlePrefab, transform.position, Quaternion.identity);
     }
 }
