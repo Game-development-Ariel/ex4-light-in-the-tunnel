@@ -15,7 +15,6 @@ public class ScreenShake : MonoBehaviour
 
     [Tooltip("How far the camera moves, in world units. It fades out over the seconds")]
     [SerializeField] private float strength = 0.12f;
-    [Tooltip("How long the shake lasts, in seconds")]
     [SerializeField] private float seconds = 0.5f;
 
     private Camera cam;

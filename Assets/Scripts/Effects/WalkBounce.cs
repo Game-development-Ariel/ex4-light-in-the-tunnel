@@ -3,20 +3,20 @@ using UnityEngine;
 /// <summary>
 /// Squashes and stretches the player's body a little while walking, like tired, careful steps.
 /// The character is a single picture, so this small motion is what makes it feel like it walks.
-/// Put it on the Body child, and give it the player's PlayerMovement.
+/// Put it on the Body child, and give it the player's CharacterController.
 /// </summary>
 public class WalkBounce : MonoBehaviour
 {
-    [SerializeField] private PlayerMovement movement;
+    // Slower than this counts as standing still.
+    private const float MinWalkSpeed = 0.3f;
+
+    [SerializeField] private CharacterController body;
 
     [Tooltip("Bounces per second while walking")]
     [SerializeField] private float stepsPerSecond = 4f;
 
     [Tooltip("How strong the squash is. 0.08 = 8 percent")]
     [SerializeField] private float amount = 0.045f;
-
-    [Tooltip("How fast the body goes back to its rest shape when the player stops")]
-    [SerializeField] private float settleSpeed = 10f;
 
     private Vector3 baseScale;
     private float phase;
@@ -28,14 +28,15 @@ public class WalkBounce : MonoBehaviour
 
     private void Update()
     {
-        if (movement.IsWalking)
+        bool isWalking = body != null && body.velocity.magnitude > MinWalkSpeed;
+        if (isWalking)
         {
             phase += Time.deltaTime * stepsPerSecond * Mathf.PI;
         }
         else
         {
             // Eases back to the rest shape instead of stopping in the middle of a squash.
-            phase = Mathf.MoveTowards(phase, Mathf.Round(phase / Mathf.PI) * Mathf.PI, Time.deltaTime * settleSpeed);
+            phase = Mathf.MoveTowards(phase, Mathf.Round(phase / Mathf.PI) * Mathf.PI, Time.deltaTime * 10f);
         }
 
         // Abs(Sin) gives one bump per step. Wider and shorter on the bump, like weight landing on a foot.

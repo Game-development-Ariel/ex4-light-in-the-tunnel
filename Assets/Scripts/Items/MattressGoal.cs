@@ -19,7 +19,7 @@ public class MattressGoal : MonoBehaviour
             return;
         }
 
-        carrier.Deliver();
+        carrier.Drop();
         bottleDelivered.Raise();
     }
 }

@@ -1,8 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Sends the player back to the start point (the cell) the moment the player is caught.
-/// The jump is instant. The capture's dark screen comes right after it, and LevelFreeze holds the player still meanwhile.
+/// Sends the player back to the start point (the cell) when the player is caught.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerRespawn : MonoBehaviour

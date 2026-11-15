@@ -36,7 +36,7 @@ public class MobileJoystick : MonoBehaviour
         UiFactory.Place(ring.rectTransform, Vector2.zero, new Vector2(Margin, Margin), Vector2.one * RingSize);
 
         Image knob = UiFactory.CreateImage(ring.transform, "Knob", UiTheme.Sprite("JoystickKnob"), Color.white);
-        UiFactory.Place(knob.rectTransform, UiFactory.Center, Vector2.zero, Vector2.one * KnobSize);
+        UiFactory.Place(knob.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.one * KnobSize);
         knob.raycastTarget = true; // The stick needs the touches.
 
         // The object is off while the stick is set up: OnScreenStick needs its control path before it starts.

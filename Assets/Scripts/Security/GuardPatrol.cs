@@ -8,9 +8,6 @@ using UnityEngine;
 /// </summary>
 public class GuardPatrol : MonoBehaviour
 {
-    // Closer than this to the wanted direction, in degrees, the turn is done and the guard snaps to it.
-    private const float FacingToleranceDegrees = 0.5f;
-
     [SerializeField] private Transform[] points;
 
     [Tooltip("Tiles per second")]
@@ -53,7 +50,7 @@ public class GuardPatrol : MonoBehaviour
     private IEnumerator TurnTo(Vector2 direction)
     {
         Quaternion goal = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, direction));
-        while (Quaternion.Angle(transform.rotation, goal) > FacingToleranceDegrees)
+        while (Quaternion.Angle(transform.rotation, goal) > 0.5f)
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, goal, turnSpeed * Time.deltaTime);
             yield return null;

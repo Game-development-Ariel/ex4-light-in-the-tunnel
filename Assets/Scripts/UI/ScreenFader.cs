@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Changes scenes with a fade: the screen goes black, the new scene loads, and the black fades away.
-/// Call ScreenFader.FadeAndLoad("Tutorial"). The black screen survives the scene change (DontDestroyOnLoad).
+/// Call ScreenFader.FadeAndLoad("EndScreen"). The black screen survives the scene change (DontDestroyOnLoad).
 /// </summary>
 public class ScreenFader : MonoBehaviour
 {
@@ -15,14 +15,6 @@ public class ScreenFader : MonoBehaviour
     private const float FadeInSeconds = 0.6f;
 
     private static bool isFading;
-
-    // The project starts Play mode without reloading the code (Enter Play Mode Options), so a static keeps
-    // its value from the last time the game ran. Unity calls this at the start of every run, to clear it.
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetStatics()
-    {
-        isFading = false;
-    }
 
     public static void FadeAndLoad(string scene)
     {

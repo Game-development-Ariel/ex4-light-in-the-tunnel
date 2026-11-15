@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// A quiet corner where the hero can stop and say a verse. Standing still inside it for a few seconds
@@ -8,12 +7,14 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Collider))]
 public class QuietPlace : MonoBehaviour
 {
+    // Slower than this counts as standing still.
+    private const float StillSpeed = 0.1f;
+
     [TextArea]
     [SerializeField] private string verse;
 
     [Tooltip("Hope gained here")]
-    [FormerlySerializedAs("hope")]
-    [SerializeField] private int hopeGained = 20;
+    [SerializeField] private int hope = 20;
 
     [Tooltip("Seconds the hero has to stand still")]
     [SerializeField] private float stillSeconds = 3f;
@@ -23,35 +24,21 @@ public class QuietPlace : MonoBehaviour
 
     private float stillTime;
 
-    // Destroy happens only at the end of the frame, and a slow frame has more than one physics step,
-    // so without this the verse could give its hope twice.
-    private bool prayed;
-
     private void OnTriggerStay(Collider other)
     {
         Hope playerHope = other.GetComponent<Hope>();
-        if (playerHope == null || prayed)
+        if (playerHope == null)
         {
             return;
         }
 
-        bool isStill = !other.GetComponent<PlayerMovement>().IsWalking;
+        bool isStill = other.GetComponent<CharacterController>().velocity.magnitude < StillSpeed;
         stillTime = isStill ? stillTime + Time.fixedDeltaTime : 0f; // OnTriggerStay runs once every physics step.
         if (stillTime >= stillSeconds)
         {
-            prayed = true;
-            playerHope.Add(hopeGained);
+            playerHope.Add(hope);
             memoryFound.Raise(verse);
             Destroy(gameObject);
-        }
-    }
-
-    // Leaving the place breaks the moment, so coming back starts the count over.
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.GetComponent<Hope>() != null)
-        {
-            stillTime = 0f;
         }
     }
 }

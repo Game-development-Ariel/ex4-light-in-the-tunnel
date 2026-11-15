@@ -3,15 +3,13 @@ using UnityEngine;
 /// <summary>
 /// Lets the player push loose things (crates, sandbags, the cell door) by walking into them.
 /// A CharacterController doesn't push rigidbodies by itself, so the push is added here as a force.
-/// Unity calls OnControllerColliderHit once per frame, and frames are not all the same length, so each frame
-/// gives an impulse of (force * frame time). Over one second that adds up to the same push at any frame rate.
 /// When a push starts, the pushed object is told about it (if it is an IPushable), so it can make a sound.
 /// </summary>
 [RequireComponent(typeof(CharacterController), typeof(PlayerMovement))]
 public class PlayerPush : MonoBehaviour
 {
     [Tooltip("How hard the player pushes, in newtons")]
-    [SerializeField] private float pushStrength = 16.8f;
+    [SerializeField] private float pushForce = 14f;
 
     [Tooltip("Seconds without touching an object before touching it again counts as a new push")]
     [SerializeField] private float newPushAfterSeconds = 0.25f;
@@ -35,7 +33,7 @@ public class PlayerPush : MonoBehaviour
         }
 
         // Pushing at the touched point (and not at the center) also turns the object, like a real shove.
-        body.AddForceAtPosition(hit.moveDirection * pushStrength * Time.deltaTime, hit.point, ForceMode.Impulse);
+        body.AddForceAtPosition(hit.moveDirection * pushForce, hit.point);
 
         // This is called every frame while pushing, so only the first touch is a new push.
         bool isNewPush = body != lastPushed || Time.time - lastPushTime > newPushAfterSeconds;

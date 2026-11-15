@@ -2,15 +2,11 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Small animations for the UI, written as coroutines: start one with StartCoroutine(UiAnim.Fade(...)).
+/// Small animations for the UI, written as coroutines: start one with StartCoroutine(UiAnim.Pop(...)).
 /// Each one changes a value a little every frame until the time is up.
-/// They all count real (unscaled) time, so they keep the same speed even if the game is slowed or paused.
 /// </summary>
 public static class UiAnim
 {
-    // A short stop after punctuation, in seconds, gives the typed words a human rhythm.
-    private const float PunctuationPause = 0.25f;
-
     /// <summary>Fades a whole group of UI objects (alpha 0 = invisible, 1 = visible).</summary>
     public static IEnumerator Fade(CanvasGroup group, float to, float seconds)
     {
@@ -21,6 +17,17 @@ public static class UiAnim
             yield return null;
         }
         group.alpha = to;
+    }
+
+    /// <summary>Grows from nothing to a bit too big, then settles. Makes things "pop" onto the screen.</summary>
+    public static IEnumerator Pop(Transform target, float seconds)
+    {
+        for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+        {
+            target.localScale = Vector3.one * EaseOutBack(t / seconds);
+            yield return null;
+        }
+        target.localScale = Vector3.one;
     }
 
     /// <summary>A quick bump in size and back, to draw the eye to something that changed.</summary>
@@ -35,6 +42,32 @@ public static class UiAnim
         target.localScale = Vector3.one;
     }
 
+    /// <summary>Shakes a UI object around its place, weaker and weaker until it stops.</summary>
+    public static IEnumerator Shake(RectTransform target, float strength, float seconds)
+    {
+        Vector2 home = target.anchoredPosition;
+        for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+        {
+            float fade = 1f - t / seconds;
+            target.anchoredPosition = home + Random.insideUnitCircle * strength * fade;
+            yield return null;
+        }
+        target.anchoredPosition = home;
+    }
+
+    /// <summary>Slides a UI object to a place, fast at first and slow at the end.</summary>
+    public static IEnumerator Slide(RectTransform target, Vector2 to, float seconds)
+    {
+        Vector2 from = target.anchoredPosition;
+        for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+        {
+            float k = 1f - Mathf.Pow(1f - t / seconds, 3f); // Ease out: slows down near the end.
+            target.anchoredPosition = Vector2.LerpUnclamped(from, to, k);
+            yield return null;
+        }
+        target.anchoredPosition = to;
+    }
+
     /// <summary>
     /// Writes the text one letter at a time, like someone typing or thinking it.
     /// A short stop after punctuation gives the words a human rhythm.
@@ -47,7 +80,7 @@ public static class UiAnim
             target.text = text.Substring(0, i + 1);
             char letter = text[i];
             bool pause = letter == '.' || letter == ',' || letter == '\n';
-            yield return new WaitForSecondsRealtime(pause ? PunctuationPause : 1f / lettersPerSecond);
+            yield return new WaitForSeconds(pause ? 0.25f : 1f / lettersPerSecond);
         }
     }
 
@@ -64,5 +97,13 @@ public static class UiAnim
         }
         color.a = to;
         target.color = color;
+    }
+
+    /// <summary>Goes a little past 1 and comes back, like a spring.</summary>
+    private static float EaseOutBack(float x)
+    {
+        const float overshoot = 1.7f;
+        float a = x - 1f;
+        return 1f + (overshoot + 1f) * a * a * a + overshoot * a * a;
     }
 }

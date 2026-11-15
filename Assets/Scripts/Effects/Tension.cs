@@ -23,16 +23,8 @@ public class Tension : MonoBehaviour
     [SerializeField] private AudioSource heartbeat;
     [SerializeField] private AudioSource breathing;
 
-    [Tooltip("The heartbeat's volume at full danger, from 0 to 1. With no danger it is silent")]
     [SerializeField] private float maxHeartbeatVolume = 0.7f;
-    [Tooltip("The breathing's volume with no danger and with full danger, from 0 to 1")]
     [SerializeField] private Vector2 breathingVolume = new Vector2(0.18f, 0.45f);
-
-    [Tooltip("The heartbeat's pitch with no danger and with full danger. A faster heart when the danger is closer")]
-    [SerializeField] private Vector2 heartbeatPitch = new Vector2(0.9f, 1.2f);
-
-    [Tooltip("The breathing's pitch with no danger and with full danger")]
-    [SerializeField] private Vector2 breathingPitch = new Vector2(1f, 1.25f);
 
     [SerializeField] private Transform player;
 
@@ -56,8 +48,8 @@ public class Tension : MonoBehaviour
         Danger = Mathf.MoveTowards(Danger, goal, smoothing * Time.deltaTime);
 
         heartbeat.volume = Danger * maxHeartbeatVolume;
-        heartbeat.pitch = Mathf.Lerp(heartbeatPitch.x, heartbeatPitch.y, Danger);
+        heartbeat.pitch = 0.9f + Danger * 0.3f; // A faster heart when the danger is closer.
         breathing.volume = Mathf.Lerp(breathingVolume.x, breathingVolume.y, Danger);
-        breathing.pitch = Mathf.Lerp(breathingPitch.x, breathingPitch.y, Danger);
+        breathing.pitch = 1f + Danger * 0.25f;
     }
 }

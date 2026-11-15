@@ -12,38 +12,42 @@ using UnityEngine;
 /// The short side of the screen is the same in both orientations, so we use it as the reference:
 /// the Size set in the Inspector is the size for landscape (where the height is the short side),
 /// and in portrait we grow the size by (long side / short side).
-/// Only the camera is changed, no other object in the game. The ScreenSizeWatcher tells it when the screen turns.
+/// Only the camera is changed, no other object in the game.
 /// </summary>
-[RequireComponent(typeof(Camera), typeof(ScreenSizeWatcher))]
+[RequireComponent(typeof(Camera))]
 public class OrientationCameraSize : MonoBehaviour
 {
     private Camera cam;
-    private ScreenSizeWatcher screenSize;
 
     // The orthographicSize from the Inspector: the wanted size when the screen is in landscape.
     private float landscapeSize;
 
+    // The screen size we last adjusted to, so we only recalculate when it changes.
+    private int lastScreenWidth;
+    private int lastScreenHeight;
+
     private void Awake()
     {
         cam = GetComponent<Camera>();
-        screenSize = GetComponent<ScreenSizeWatcher>();
         landscapeSize = cam.orthographicSize;
         UpdateSize();
     }
 
-    private void OnEnable()
+    /// <summary>Checks every frame if the screen turned, and fixes the size if it did.</summary>
+    private void Update()
     {
-        screenSize.Changed += UpdateSize;
-    }
-
-    private void OnDisable()
-    {
-        screenSize.Changed -= UpdateSize;
+        if (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight)
+        {
+            UpdateSize();
+        }
     }
 
     /// <summary>Sets orthographicSize so one world unit takes the same number of pixels as in landscape.</summary>
     private void UpdateSize()
     {
+        lastScreenWidth = Screen.width;
+        lastScreenHeight = Screen.height;
+
         int shortSide = Mathf.Min(Screen.width, Screen.height);
 
         // In landscape the height is the short side, so the ratio is 1 and the size stays as set.

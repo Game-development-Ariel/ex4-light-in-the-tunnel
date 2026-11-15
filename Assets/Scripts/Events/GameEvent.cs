@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// An event that is saved as an asset. One script raises it and other scripts listen to it,
 /// and they only need to hold the same asset, so they don't have to know each other.
-/// For example the security camera raises PlayerCaught, and the round rules, the respawn, the HUD and the sound all listen.
+/// For example the security camera raises PlayerCaught, and the hope, the HUD and the sound all listen.
 /// </summary>
 [CreateAssetMenu(menuName = "Events/Game Event")]
 public class GameEvent : ScriptableObject

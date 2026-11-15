@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// A memory: a small thing in the world (a note, marks on a wall) that reminds the hero of home.
@@ -13,8 +12,7 @@ public class MemoryZone : MonoBehaviour
     [SerializeField] private string memory;
 
     [Tooltip("Hope gained from this memory")]
-    [FormerlySerializedAs("hope")]
-    [SerializeField] private int hopeGained = 15;
+    [SerializeField] private int hope = 15;
 
     [Tooltip("Raised with the memory's text. The memory caption listens to it")]
     [SerializeField] private TextEvent memoryFound;
@@ -27,7 +25,7 @@ public class MemoryZone : MonoBehaviour
             return;
         }
 
-        playerHope.Add(hopeGained);
+        playerHope.Add(hope);
         memoryFound.Raise(memory);
         Destroy(gameObject); // Each memory is found once.
     }
