@@ -36,6 +36,27 @@ public static class WatcherBuilder
     private const string CONE_MATERIAL_PATH = "Assets/Materials/VisionCone.mat";
     private const string CONE_SHADER = "Universal Render Pipeline/2D/Sprite-Unlit-Default";
 
+    // How far the camera sits from the center of its wall tile toward the floor, in tiles: just past the tile's edge.
+    private const float CAMERA_EDGE_OFFSET = 0.6f;
+
+    // Degrees in a full turn.
+    private const float FULL_TURN = 360f;
+
+    // The ring of the guard's footsteps: a warm white that starts invisible (HeardSteps sets its alpha),
+    // drawn above the walls.
+    private static readonly Color StepsRingColor = new Color(1f, 0.9f, 0.75f, 0f);
+    private const int RING_SORTING_ORDER = 20;
+
+    // The stand-in camera picture, in pixels of its 32 x 32 texture: (left, bottom, right, top), edges included.
+    private static readonly (int Left, int Bottom, int Right, int Top) GlintRect = (15, 24, 16, 25);
+    private static readonly (int Left, int Bottom, int Right, int Top) LensRect = (12, 21, 19, 27);
+    private static readonly (int Left, int Bottom, int Right, int Top) CasingRect = (10, 8, 21, 20);
+    private static readonly (int Left, int Bottom, int Right, int Top) MountRect = (14, 3, 17, 7);
+    private static readonly Color GlintColor = new Color(0.4f, 0.7f, 1f, 1f);
+    private static readonly Color LensColor = new Color(0.1f, 0.1f, 0.12f, 1f);
+    private static readonly Color CasingColor = new Color(0.6f, 0.6f, 0.62f, 1f);
+    private static readonly Color MountColor = new Color(0.3f, 0.3f, 0.32f, 1f);
+
     // The direction from the camera's wall to the floor next to it.
     private static Vector2Int CameraFacing(int column, int row)
     {
@@ -102,13 +123,13 @@ public static class WatcherBuilder
         bodyRenderer.sortingOrder = CAMERA_SORTING_ORDER;
 
         Vector3 center = floor.GetCellCenterWorld(ToCell(column, row));
-        cameraObject.transform.position = center + new Vector3(facing.x, facing.y, 0f) * 0.6f;
+        cameraObject.transform.position = center + new Vector3(facing.x, facing.y, 0f) * CAMERA_EDGE_OFFSET;
 
         // Unity angles: 0 looks up, 90 left, 180 down, 270 right.
         float angle = Vector2.SignedAngle(Vector2.up, facing);
         if (angle < 0f)
         {
-            angle += 360f;
+            angle += FULL_TURN;
         }
         cameraObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
@@ -158,8 +179,8 @@ public static class WatcherBuilder
         SpriteRenderer ringRenderer = ring.AddComponent<SpriteRenderer>();
         ringRenderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Resources/UI/JoystickRing.png");
         ringRenderer.sharedMaterial = ConeMaterial();
-        ringRenderer.color = new Color(1f, 0.9f, 0.75f, 0f);
-        ringRenderer.sortingOrder = 20;
+        ringRenderer.color = StepsRingColor;
+        ringRenderer.sortingOrder = RING_SORTING_ORDER;
         HeardSteps steps = guard.AddComponent<HeardSteps>();
         SetupTools.SetField(steps, "ring", ringRenderer);
         SetupTools.SetField(steps, "heroSenses", player != null ? player.GetComponent<HopeSenses>() : null);
@@ -216,27 +237,23 @@ public static class WatcherBuilder
     /// <summary>A gray box with a dark lens on top. Only a stand-in until the AI-made sprite is ready.</summary>
     private static Sprite CameraSprite()
     {
-        Color casing = new Color(0.6f, 0.6f, 0.62f, 1f);
-        Color lens = new Color(0.1f, 0.1f, 0.12f, 1f);
-        Color glint = new Color(0.4f, 0.7f, 1f, 1f);
-        Color mount = new Color(0.3f, 0.3f, 0.32f, 1f);
         return PlaceholderSprites.LoadOrCreate(CAMERA_SPRITE_PATH, (x, y) =>
         {
-            if (PlaceholderSprites.InRect(x, y, 15, 24, 16, 25))
+            if (PlaceholderSprites.InRect(x, y, GlintRect))
             {
-                return glint;
+                return GlintColor;
             }
-            if (PlaceholderSprites.InRect(x, y, 12, 21, 19, 27))
+            if (PlaceholderSprites.InRect(x, y, LensRect))
             {
-                return lens;
+                return LensColor;
             }
-            if (PlaceholderSprites.InRect(x, y, 10, 8, 21, 20))
+            if (PlaceholderSprites.InRect(x, y, CasingRect))
             {
-                return casing;
+                return CasingColor;
             }
-            if (PlaceholderSprites.InRect(x, y, 14, 3, 17, 7))
+            if (PlaceholderSprites.InRect(x, y, MountRect))
             {
-                return mount;
+                return MountColor;
             }
             return Color.clear;
         });

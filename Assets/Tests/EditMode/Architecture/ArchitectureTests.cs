@@ -23,9 +23,6 @@ public class ArchitectureTests
         "MobileJoystick.UsesTouch", "UiTheme.TitleFont", "UiTheme.ItalicFont", "UiTheme.ThoughtFont",
     };
 
-    // Tuning numbers without a Tooltip, Range or Min. Keep this list short: a number needs to say what it means.
-    private static readonly HashSet<string> UndocumentedNumbers = new HashSet<string> { "CameraIndicators.humVolume", "HeardSteps.maxAlpha" };
-
     private static readonly Assembly Game = typeof(GameEvent).Assembly;
 
     private static SourceFile[] scripts;
@@ -209,7 +206,7 @@ public class ArchitectureTests
                 string attributes = file.Code.Substring(previousEnd + 1, match.Index - previousEnd - 1) + match.Value;
                 bool explained = attributes.Contains("[Tooltip(") || attributes.Contains("[Range(") || attributes.Contains("[Min(");
                 string name = $"{file.Name}.{match.Groups[1].Value}";
-                if (!explained && !UndocumentedNumbers.Contains(name))
+                if (!explained)
                 {
                     problems.Add($"{name} has no [Tooltip], [Range] or [Min]");
                 }

@@ -19,7 +19,9 @@ public static class TunnelLevelSetup
     // Extra size around the mattress tiles, so touching its edge counts.
     private const float GoalPadding = 0.4f;
 
+    // The player's ball, in tiles, and the thin space it keeps from walls so it doesn't get stuck in them.
     private const float PlayerRadius = 0.3f;
+    private const float PlayerSkinWidth = 0.02f;
 
     // From the design document: in the tutorial the hero is hurt, so his base speed is 2 tiles per second
     // instead of 3. HopeSenses multiplies it by HopeEffects.speedFactor, so the real speed changes with hope.
@@ -96,7 +98,7 @@ public static class TunnelLevelSetup
         controller.radius = PlayerRadius;
         controller.height = PlayerRadius * 2f;
         controller.stepOffset = 0f; // Nothing to climb on a flat map.
-        controller.skinWidth = 0.02f;
+        controller.skinWidth = PlayerSkinWidth;
         controller.minMoveDistance = 0f;
 
         // The speed is written only if it was never set, so a speed tuned in the Inspector is kept.

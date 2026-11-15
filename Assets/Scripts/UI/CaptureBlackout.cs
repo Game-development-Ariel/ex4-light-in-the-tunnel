@@ -13,7 +13,10 @@ public class CaptureBlackout : MonoBehaviour
 
     // Almost black with a little red, and not fully opaque, so the dark feels like closed eyes.
     private static readonly Color DarkColor = new Color(0.02f, 0f, 0f, 0.96f);
+
+    // The line in the middle of the dark, in UI pixels.
     private static readonly Vector2 LineSize = new Vector2(1200f, 120f);
+    private const int LineFontSize = 56;
 
     [Tooltip("How long the player is held after being caught. The dark lasts exactly that long")]
     [SerializeField] private TunnelLevelSettings settings;
@@ -39,8 +42,11 @@ public class CaptureBlackout : MonoBehaviour
     [SerializeField] private string lostBottleThought = "They took the bottle back to the storage room.\nI'll try again. Slower this time.";
 
     [Header("Timing")]
+    [Tooltip("How long the screen takes to go dark, in seconds")]
     [SerializeField] private float fadeInSeconds = 0.5f;
+    [Tooltip("How long the dark takes to clear, in seconds")]
     [SerializeField] private float fadeOutSeconds = 1.5f;
+    [Tooltip("The volume of the caught sound, from 0 to 1")]
     [SerializeField] private float caughtVolume = 0.9f;
 
     private CanvasGroup blackout;
@@ -60,7 +66,7 @@ public class CaptureBlackout : MonoBehaviour
         Image black = UiFactory.CreateImage(canvas.transform, "Black", null, DarkColor);
         UiFactory.Stretch(black.rectTransform);
 
-        line = UiFactory.CreateTitle(canvas.transform, "Line", UiFactory.Center, LineSize, 56, UiTheme.TextColor);
+        line = UiFactory.CreateTitle(canvas.transform, "Line", UiFactory.Center, LineSize, LineFontSize, UiTheme.TextColor);
         line.rectTransform.pivot = UiFactory.Center;
         line.font = UiTheme.ItalicFont;
     }

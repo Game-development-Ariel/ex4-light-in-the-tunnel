@@ -17,6 +17,7 @@ public class DustMotes : MonoBehaviour
     [Tooltip("A material lit by the 2D lights")]
     [SerializeField] private Material material;
 
+    [Tooltip("The most specks of dust in the air at once")]
     [SerializeField] private int maxSpecks = 70;
 
     [Tooltip("Seconds a speck lives: the shortest and the longest")]

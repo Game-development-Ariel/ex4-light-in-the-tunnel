@@ -12,8 +12,13 @@ public class HintToast : MonoBehaviour
     // Above the HUD (10), below the title card and the fader.
     private const int CanvasSortingOrder = 20;
 
+    // The keyboard keys shown above the text: their size, the gap between them and their font, in UI pixels.
     private const float KeySize = 58f;
     private const float KeySpacing = 10f;
+    private const int KeyFontSize = 26;
+
+    // The font size of the thought itself.
+    private const int MessageFontSize = 34;
 
     // The dark band at the bottom of the screen, the message in it, and the row of keys above it, in UI pixels.
     private static readonly Vector2 BandOffset = new Vector2(0f, 40f);
@@ -51,13 +56,13 @@ public class HintToast : MonoBehaviour
 
         // A dark band that fades out at its ends, so the words are readable without a hard box.
         Image band = UiFactory.CreateImage(canvas.transform, "Band", UiTheme.Sprite("Band"), Color.white);
-        UiFactory.Place(band.rectTransform, new Vector2(0.5f, 0f), BandOffset, BandSize);
+        UiFactory.Place(band.rectTransform, UiFactory.BottomCenter, BandOffset, BandSize);
 
-        message = UiFactory.CreateText(band.transform, "Message", UiFactory.Center, MessageSize, 34, TextAnchor.MiddleCenter);
+        message = UiFactory.CreateText(band.transform, "Message", UiFactory.Center, MessageSize, MessageFontSize, TextAnchor.MiddleCenter);
         message.rectTransform.pivot = UiFactory.Center;
 
         keyRow = UiFactory.CreateRow(band.transform, "Keys", KeySpacing);
-        UiFactory.Place(keyRow, new Vector2(0.5f, 1f), KeyRowOffset, KeyRowSize);
+        UiFactory.Place(keyRow, UiFactory.TopCenter, KeyRowOffset, KeyRowSize);
         keyRow.pivot = UiFactory.Center;
     }
 
@@ -107,7 +112,7 @@ public class HintToast : MonoBehaviour
         {
             Image cap = UiFactory.CreatePanel(keyRow, "Key " + key, "Key");
             cap.rectTransform.sizeDelta = Vector2.one * KeySize;
-            Text label = UiFactory.CreateText(cap.transform, "Label", UiFactory.Center, Vector2.one * KeySize, 26, TextAnchor.MiddleCenter);
+            Text label = UiFactory.CreateText(cap.transform, "Label", UiFactory.Center, Vector2.one * KeySize, KeyFontSize, TextAnchor.MiddleCenter);
             label.rectTransform.pivot = UiFactory.Center;
             label.text = key;
         }

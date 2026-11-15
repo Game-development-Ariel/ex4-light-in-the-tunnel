@@ -11,6 +11,25 @@ public static class MoodSetup
 {
     private const string MoodProfilePath = "Assets/Settings/TunnelMood.asset";
 
+    // A soft glow around the bulbs: pixels brighter than the threshold glow, and the scatter is how wide.
+    private const float BloomThreshold = 0.8f;
+    private const float BloomIntensity = 0.7f;
+    private const float BloomScatter = 0.7f;
+
+    // Dark edges of the screen, from 0 to 1. MoodVolume changes the intensity while the game runs,
+    // starting from its own baseVignette (the same 0.36).
+    private const float VignetteIntensity = 0.36f;
+    private const float VignetteSmoothness = 0.5f;
+
+    // Film grain, from 0 to 1.
+    private const float GrainIntensity = 0.35f;
+
+    // Faded, a little warm colors. Contrast and saturation are from -100 to 100, and 0 is normal.
+    // MoodVolume sets the saturation while the game runs, from its own baseSaturation (the same -22).
+    private const float Contrast = 14f;
+    private const float Saturation = -22f;
+    private static readonly Color ColorFilter = new Color(1f, 0.97f, 0.92f);
+
     /// <summary>
     /// A global Volume with the tunnel's look. The camera must have post-processing turned on to show it.
     /// MoodVolume changes the values while the game runs.
@@ -25,23 +44,23 @@ public static class MoodSetup
             AssetDatabase.CreateAsset(profile, MoodProfilePath);
 
             Bloom bloom = AddEffect<Bloom>(profile);
-            bloom.threshold.Override(0.8f);
-            bloom.intensity.Override(0.7f);
-            bloom.scatter.Override(0.7f);
+            bloom.threshold.Override(BloomThreshold);
+            bloom.intensity.Override(BloomIntensity);
+            bloom.scatter.Override(BloomScatter);
 
             Vignette vignette = AddEffect<Vignette>(profile);
-            vignette.intensity.Override(0.36f);
-            vignette.smoothness.Override(0.5f);
+            vignette.intensity.Override(VignetteIntensity);
+            vignette.smoothness.Override(VignetteSmoothness);
 
             FilmGrain grain = AddEffect<FilmGrain>(profile);
             grain.type.Override(FilmGrainLookup.Medium3);
-            grain.intensity.Override(0.35f);
+            grain.intensity.Override(GrainIntensity);
 
             ColorAdjustments colors = AddEffect<ColorAdjustments>(profile);
-            colors.contrast.Override(14f);
-            colors.saturation.Override(-22f);
+            colors.contrast.Override(Contrast);
+            colors.saturation.Override(Saturation);
             colors.postExposure.Override(0f);
-            colors.colorFilter.Override(new Color(1f, 0.97f, 0.92f));
+            colors.colorFilter.Override(ColorFilter);
 
             ChromaticAberration split = AddEffect<ChromaticAberration>(profile);
             split.intensity.Override(0f);

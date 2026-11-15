@@ -26,6 +26,14 @@ public class LightFlicker : MonoBehaviour
     [Tooltip("The first dip comes at the earliest after this many seconds")]
     [SerializeField] private float firstDipAfter = 2f;
 
+    // Each bulb reads the noise from a random place between 0 and this, so no two bulbs flicker the same.
+    private const float MaxSeed = 100f;
+
+    // After a dip, the next one comes after secondsBetweenDips times a random factor between these,
+    // so the dips don't keep a beat.
+    private const float MinDipGapFactor = 0.5f;
+    private const float MaxDipGapFactor = 1.5f;
+
     private Light2D bulb;
     private float baseIntensity;
     private float seed;
@@ -35,7 +43,7 @@ public class LightFlicker : MonoBehaviour
     {
         bulb = GetComponent<Light2D>();
         baseIntensity = bulb.intensity;
-        seed = Random.value * 100f; // Each bulb flickers differently.
+        seed = Random.value * MaxSeed;
         dipTimer = Random.Range(firstDipAfter, secondsBetweenDips * 2f);
     }
 
@@ -51,7 +59,7 @@ public class LightFlicker : MonoBehaviour
             intensity *= dipBrightness;
             if (dipTimer < -dipSeconds)
             {
-                dipTimer = Random.Range(secondsBetweenDips * 0.5f, secondsBetweenDips * 1.5f);
+                dipTimer = Random.Range(secondsBetweenDips * MinDipGapFactor, secondsBetweenDips * MaxDipGapFactor);
             }
         }
         bulb.intensity = intensity;

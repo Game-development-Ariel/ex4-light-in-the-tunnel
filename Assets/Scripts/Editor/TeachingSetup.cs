@@ -7,6 +7,36 @@ using UnityEngine;
 /// </summary>
 public static class TeachingSetup
 {
+    // Where each zone is on the tutorial map (its center), and its size, in world units (one unit is one tile).
+    private static readonly Vector2 NoteMemoryPosition = new Vector2(-8.5f, 1.5f);
+    private static readonly Vector2 NoteMemorySize = new Vector2(0.8f, 0.8f);
+    private static readonly Vector2 WallMemoryPosition = new Vector2(-4f, 3.5f);
+    private static readonly Vector2 WallMemorySize = new Vector2(2f, 1f);
+    private static readonly Vector2 DoorHintPosition = new Vector2(-2f, 1f);
+    private static readonly Vector2 DoorHintSize = new Vector2(1f, 4f);
+    private static readonly Vector2 GuardHintPosition = new Vector2(1f, 0.5f);
+    private static readonly Vector2 GuardHintSize = new Vector2(1f, 3f);
+    private static readonly Vector2 RoomCameraHintPosition = new Vector2(21f, -2.5f);
+    private static readonly Vector2 RoomCameraHintSize = new Vector2(2f, 1f);
+    private static readonly Vector2 CupMemoryPosition = new Vector2(23.5f, 1.7f);
+    private static readonly Vector2 CupMemorySize = new Vector2(1.6f, 1f);
+    private static readonly Vector2 CameraHintPosition = new Vector2(10.5f, -3.5f);
+    private static readonly Vector2 CameraHintSize = new Vector2(3f, 1f);
+    private static readonly Vector2 WaitHintPosition = new Vector2(18.5f, -6.5f);
+    private static readonly Vector2 WaitHintSize = new Vector2(1f, 3f);
+
+    // How much hope each memory gives when it is found. Hints give none (0).
+    private const int NoteMemoryHope = 15;
+    private const int WallMemoryHope = 10;
+    private const int CupMemoryHope = 15;
+
+    // The quiet place in the corridor wall: where it is and its size, in world units, and its faint warm light.
+    private static readonly Vector2 QuietPlacePosition = new Vector2(2.5f, -1.5f);
+    private static readonly Vector3 QuietPlaceSize = new Vector3(0.9f, 0.9f, 1f);
+    private const float QuietGlowRadius = 1.4f;
+    private const float QuietGlowIntensity = 0.45f;
+    private static readonly Color QuietGlowColor = new Color(1f, 0.85f, 0.6f);
+
     /// <summary>
     /// The opening, the hints and the objective arrow, then the hint zones and the memories on the map.
     /// The positions are world coordinates of the tutorial map (see the layout in TutorialLayout).
@@ -31,22 +61,22 @@ public static class TeachingSetup
             Object.DestroyImmediate(GameObject.Find(old)); // Left from an older version of this tool.
         }
 
-        AddZone<MemoryZone>(zones.transform, "Memory: Note", new Vector2(-8.5f, 1.5f), new Vector2(0.8f, 0.8f), "memory",
-            "A scrap of paper under the mattress.\nI wrote my family's names on it, so I won't forget their voices.", 15);
-        AddZone<MemoryZone>(zones.transform, "Memory: Wall", new Vector2(-4f, 3.5f), new Vector2(2f, 1f), "memory",
-            "Lines scratched into the wall. Someone counted days here before me.\nI'll count too. And I'll go home.", 10);
-        AddZone<HintZone>(zones.transform, "Hint: Door", new Vector2(-2f, 1f), new Vector2(1f, 4f), "hint",
+        AddZone<MemoryZone>(zones.transform, "Memory: Note", NoteMemoryPosition, NoteMemorySize, "memory",
+            "A scrap of paper under the mattress.\nI wrote my family's names on it, so I won't forget their voices.", NoteMemoryHope);
+        AddZone<MemoryZone>(zones.transform, "Memory: Wall", WallMemoryPosition, WallMemorySize, "memory",
+            "Lines scratched into the wall. Someone counted days here before me.\nI'll count too. And I'll go home.", WallMemoryHope);
+        AddZone<HintZone>(zones.transform, "Hint: Door", DoorHintPosition, DoorHintSize, "hint",
             "The door isn't locked all the way. I lean on it, and it gives.\nSteps outside. A guard. I wait until he walks away.", 0);
-        AddZone<HintZone>(zones.transform, "Hint: Guard", new Vector2(1f, 0.5f), new Vector2(1f, 3f), "hint",
+        AddZone<HintZone>(zones.transform, "Hint: Guard", GuardHintPosition, GuardHintSize, "hint",
             "His flashlight shows where he looks. I stay behind him,\nor wait in a dark corner of the wall until he passes.", 0);
-        AddZone<HintZone>(zones.transform, "Hint: Room Camera", new Vector2(21f, -2.5f), new Vector2(2f, 1f), "hint",
+        AddZone<HintZone>(zones.transform, "Hint: Room Camera", RoomCameraHintPosition, RoomCameraHintSize, "hint",
             "Another eye, in the ceiling of the storage room.\nI wait here until it looks away. Then straight to the water.", 0);
-        AddZone<MemoryZone>(zones.transform, "Memory: Cup", new Vector2(23.5f, 1.7f), new Vector2(1.6f, 1f), "memory",
-            "A tin cup on the table.\nAt home the kettle is always on, and someone is waiting to pour.", 15);
-        AddQuietPlace(zones.transform, new Vector2(2.5f, -1.5f));
-        AddZone<HintZone>(zones.transform, "Hint: Camera", new Vector2(10.5f, -3.5f), new Vector2(3f, 1f), "hint",
+        AddZone<MemoryZone>(zones.transform, "Memory: Cup", CupMemoryPosition, CupMemorySize, "memory",
+            "A tin cup on the table.\nAt home the kettle is always on, and someone is waiting to pour.", CupMemoryHope);
+        AddQuietPlace(zones.transform, QuietPlacePosition);
+        AddZone<HintZone>(zones.transform, "Hint: Camera", CameraHintPosition, CameraHintSize, "hint",
             "A camera. Its pale light is its eye.\nIf the light touches me, they'll know.", 0);
-        AddZone<HintZone>(zones.transform, "Hint: Wait", new Vector2(18.5f, -6.5f), new Vector2(1f, 3f), "hint",
+        AddZone<HintZone>(zones.transform, "Hint: Wait", WaitHintPosition, WaitHintSize, "hint",
             "I wait here, in the dark, and watch the light.\nWhen it turns away, I go up. Quietly.", 0);
     }
 
@@ -61,7 +91,7 @@ public static class TeachingSetup
         place.transform.position = position;
         BoxCollider box = place.AddComponent<BoxCollider>();
         box.isTrigger = true;
-        box.size = new Vector3(0.9f, 0.9f, 1f);
+        box.size = QuietPlaceSize;
 
         QuietPlace quiet = place.AddComponent<QuietPlace>();
         SetupTools.SetField(quiet, "memoryFound", TunnelAssets.MemoryFound);
@@ -69,7 +99,7 @@ public static class TeachingSetup
         fields.FindProperty("verse").stringValue = "\"Hope in the Lord; be strong, and let your heart take courage.\"\nI say it without a sound. Something in me stands up again.";
         fields.ApplyModifiedPropertiesWithoutUndo();
 
-        LightSetup.AddBulb(place.transform, "Glow", position, 1.4f, 0.45f, new Color(1f, 0.85f, 0.6f));
+        LightSetup.AddBulb(place.transform, "Glow", position, QuietGlowRadius, QuietGlowIntensity, QuietGlowColor);
     }
 
     private static void AddZone<T>(Transform parent, string name, Vector2 position, Vector2 size, string textField, string text, int hope) where T : Component

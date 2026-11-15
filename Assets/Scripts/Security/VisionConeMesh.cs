@@ -8,6 +8,9 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class VisionConeMesh : MonoBehaviour
 {
+    // A triangle has three corners, so it takes three places in the mesh's list of triangles.
+    private const int CornersPerTriangle = 3;
+
     [SerializeField] private VisionSensor sensor;
 
     [Tooltip("How many rays build the cone. More rays = the cone follows the walls more exactly")]
@@ -16,6 +19,8 @@ public class VisionConeMesh : MonoBehaviour
 
     [Tooltip("A cold, pale light: the camera is a machine, not a lamp")]
     [SerializeField] private Color normalColor = new Color(0.66f, 0.76f, 0.95f, 0.13f);
+
+    [Tooltip("The color of the cone for a short time after it saw the player")]
     [SerializeField] private Color alarmColor = new Color(0.8f, 0.1f, 0.08f, 0.32f);
 
     [Tooltip("How see-through the far end of the cone is, compared to the sensor's end. Looks like light fading")]
@@ -69,12 +74,14 @@ public class VisionConeMesh : MonoBehaviour
 
     private int[] FanTriangles()
     {
-        int[] triangles = new int[(rayCount - 1) * 3];
+        int[] triangles = new int[(rayCount - 1) * CornersPerTriangle];
         for (int i = 0; i < rayCount - 1; i++)
         {
-            triangles[i * 3] = 0;
-            triangles[i * 3 + 1] = i + 1;
-            triangles[i * 3 + 2] = i + 2;
+            // Each triangle joins the sensor (vertex 0) to the ends of two rays next to each other.
+            int first = i * CornersPerTriangle;
+            triangles[first] = 0;
+            triangles[first + 1] = i + 1;
+            triangles[first + 2] = i + 2;
         }
         return triangles;
     }

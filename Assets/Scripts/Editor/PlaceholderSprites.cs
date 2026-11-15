@@ -45,9 +45,9 @@ public static class PlaceholderSprites
         return AssetDatabase.LoadAssetAtPath<Sprite>(path);
     }
 
-    /// <summary>True if (x, y) is inside the rectangle from (left, bottom) to (right, top), edges included.</summary>
-    public static bool InRect(int x, int y, int left, int bottom, int right, int top)
+    /// <summary>True if (x, y) is inside the rectangle from (Left, Bottom) to (Right, Top), edges included.</summary>
+    public static bool InRect(int x, int y, (int Left, int Bottom, int Right, int Top) rect)
     {
-        return x >= left && x <= right && y >= bottom && y <= top;
+        return x >= rect.Left && x <= rect.Right && y >= rect.Bottom && y <= rect.Top;
     }
 }

@@ -12,6 +12,9 @@ public class VisionSensor : MonoBehaviour
     [Tooltip("Raised when the target is seen")]
     [SerializeField] private GameEvent targetSeen;
 
+    // Closer than this, in world units, the target is right on the sensor.
+    private const float OnSensorDistance = 0.001f;
+
     // More than 0 for a short time after seeing the target.
     private float alarmTimer;
 
@@ -53,7 +56,7 @@ public class VisionSensor : MonoBehaviour
 
         Vector2 toTarget = target.position - transform.position;
         float distance = toTarget.magnitude;
-        if (distance < 0.001f)
+        if (distance < OnSensorDistance)
         {
             return true; // Right on the sensor. There is no direction to check, and nothing can hide it.
         }

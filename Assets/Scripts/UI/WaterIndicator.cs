@@ -8,6 +8,10 @@ public class WaterIndicator : MonoBehaviour
 {
     private const int CanvasSortingOrder = 10;
 
+    // The drop at the end of the hope bar, in UI pixels from the top-left corner of the screen. Down is minus.
+    private static readonly Vector2 DropSize = new Vector2(40f, 40f);
+    private static readonly Vector2 DropPosition = new Vector2(428f, -60f);
+
     [Header("Listens to")]
     [SerializeField] private GameEvent bottlePicked;
     [SerializeField] private GameEvent bottleDropped;
@@ -32,8 +36,8 @@ public class WaterIndicator : MonoBehaviour
     {
         Canvas canvas = UiFactory.CreateCanvas("Water Canvas", CanvasSortingOrder);
         canvas.transform.SetParent(transform, false);
-        drop = UiFactory.CreateIcon(canvas.transform, "Drop", new Vector2(40f, 40f));
-        UiFactory.Place(drop.rectTransform, UiFactory.TopLeft, new Vector2(428f, -60f), new Vector2(40f, 40f));
+        drop = UiFactory.CreateIcon(canvas.transform, "Drop", DropSize);
+        UiFactory.Place(drop.rectTransform, UiFactory.TopLeft, DropPosition, DropSize);
         drop.rectTransform.pivot = UiFactory.Center;
         drop.color = new Color(1f, 1f, 1f, emptyAlpha);
     }

@@ -18,7 +18,9 @@ public class HeardSteps : MonoBehaviour
     [Tooltip("Steps per second")]
     [SerializeField] private float stepRate = 1.6f;
 
+    [Tooltip("The ring's alpha when a step starts, from 0 (invisible) to 1 (solid). It fades to 0")]
     [SerializeField] private float maxAlpha = 0.5f;
+    [Tooltip("The ring's scale when a step starts and when it ends. 1 = the sprite's own size")]
     [SerializeField] private Vector2 ringSize = new Vector2(0.6f, 1.8f);
 
     private GuardPatrol patrol;

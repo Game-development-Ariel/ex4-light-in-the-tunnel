@@ -19,6 +19,35 @@ public static class GameFeelSetup
 {
     private const string UiFolder = "Assets/Resources/UI/";
 
+    // The border of the framed UI sprites, in texture pixels: the part a sliced Image never stretches.
+    // Panel and Button share one border.
+    private const float PanelBorder = 16f;
+    private const float KeyBorder = 12f;
+    private const float BarBorder = 7f;
+
+    // The bottle's faint cold glow, and its soft shadow on the floor. The position is local to the bottle,
+    // in world units, and the scales multiply the sprite's own size.
+    private static readonly Color BottleGlowColor = new Color(0.6f, 0.78f, 1f, 0.3f);
+    private const int BottleGlowSortingOrder = 3;
+    private const float BottleGlowScale = 1.6f;
+    private static readonly Color BottleShadowColor = new Color(1f, 1f, 1f, 0.55f);
+    private const int BottleShadowSortingOrder = 4;
+    private static readonly Vector3 BottleShadowPosition = new Vector3(0f, -0.38f, 0f);
+    private static readonly Vector3 BottleShadowScale = new Vector3(0.9f, 0.7f, 1f);
+
+    // The hero's small warm halo: its radii in world units, and its brightness.
+    private const float HaloOuterRadius = 3.4f;
+    private const float HaloInnerRadius = 0.4f;
+    private const float HaloIntensity = 0.75f;
+    private static readonly Color HaloColor = new Color(1f, 0.88f, 0.74f);
+
+    // The hero's shadow on the floor. The position is local to the hero, in world units,
+    // and the scale multiplies the sprite's own size.
+    private static readonly Color PlayerShadowColor = new Color(1f, 1f, 1f, 0.6f);
+    private const int PlayerShadowSortingOrder = 9;
+    private static readonly Vector3 PlayerShadowPosition = new Vector3(0f, -0.18f, 0f);
+    private static readonly Vector3 PlayerShadowScale = new Vector3(1.2f, 0.9f, 1f);
+
     [MenuItem("Tools/Tunnel/3 Setup Game Feel")]
     public static void Setup()
     {
@@ -69,15 +98,15 @@ public static class GameFeelSetup
             float border = 0f;
             if (name == "Panel" || name == "Button")
             {
-                border = 16f;
+                border = PanelBorder;
             }
             else if (name == "Key")
             {
-                border = 12f;
+                border = KeyBorder;
             }
             else if (name.StartsWith("Bar"))
             {
-                border = 7f;
+                border = BarBorder;
             }
 
             importer.textureType = TextureImporterType.Sprite;
@@ -100,11 +129,11 @@ public static class GameFeelSetup
         Object.DestroyImmediate(bottle.GetComponent<Bob>());
         bottle.AddComponent<Bob>();
 
-        SpriteRenderer glow = ChildSprite(bottle.transform, "Glow", "Glow", new Color(0.6f, 0.78f, 1f, 0.3f), 3);
-        glow.transform.localScale = Vector3.one * 1.6f;
-        SpriteRenderer shadow = ChildSprite(bottle.transform, "Shadow", "Shadow", new Color(1f, 1f, 1f, 0.55f), 4);
-        shadow.transform.localPosition = new Vector3(0f, -0.38f, 0f);
-        shadow.transform.localScale = new Vector3(0.9f, 0.7f, 1f);
+        SpriteRenderer glow = ChildSprite(bottle.transform, "Glow", "Glow", BottleGlowColor, BottleGlowSortingOrder);
+        glow.transform.localScale = Vector3.one * BottleGlowScale;
+        SpriteRenderer shadow = ChildSprite(bottle.transform, "Shadow", "Shadow", BottleShadowColor, BottleShadowSortingOrder);
+        shadow.transform.localPosition = BottleShadowPosition;
+        shadow.transform.localScale = BottleShadowScale;
 
         PrefabUtility.SaveAsPrefabAsset(bottle, TunnelAssets.BottlePrefabPath);
         PrefabUtility.UnloadPrefabContents(bottle);
@@ -126,10 +155,10 @@ public static class GameFeelSetup
         Light2D halo = body.GetComponent<Light2D>();
         if (halo != null)
         {
-            halo.pointLightOuterRadius = 3.4f;
-            halo.pointLightInnerRadius = 0.4f;
-            halo.intensity = 0.75f;
-            halo.color = new Color(1f, 0.88f, 0.74f);
+            halo.pointLightOuterRadius = HaloOuterRadius;
+            halo.pointLightInnerRadius = HaloInnerRadius;
+            halo.intensity = HaloIntensity;
+            halo.color = HaloColor;
         }
 
         Object.DestroyImmediate(player.GetComponent<Footsteps>());
@@ -140,9 +169,9 @@ public static class GameFeelSetup
         WalkBounce bounce = body.gameObject.AddComponent<WalkBounce>();
         SetupTools.SetField(bounce, "movement", player);
 
-        SpriteRenderer shadow = ChildSprite(player.transform, "Shadow", "Shadow", new Color(1f, 1f, 1f, 0.6f), 9);
-        shadow.transform.localPosition = new Vector3(0f, -0.18f, 0f);
-        shadow.transform.localScale = new Vector3(1.2f, 0.9f, 1f);
+        SpriteRenderer shadow = ChildSprite(player.transform, "Shadow", "Shadow", PlayerShadowColor, PlayerShadowSortingOrder);
+        shadow.transform.localPosition = PlayerShadowPosition;
+        shadow.transform.localScale = PlayerShadowScale;
     }
 
     // ---------- Helpers ----------

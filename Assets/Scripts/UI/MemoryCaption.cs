@@ -14,8 +14,10 @@ public class MemoryCaption : MonoBehaviour
     // The memory is written in the upper middle of the screen, in UI pixels.
     private static readonly Vector2 TextSize = new Vector2(1300f, 200f);
     private static readonly Vector2 TextOffset = new Vector2(0f, 170f);
+    private const int FontSize = 46;
 
     [SerializeField] private TextEvent memoryFound;
+    [Tooltip("Seconds a memory stays after it has appeared")]
     [SerializeField] private float showSeconds = 5f;
 
     [Tooltip("How loud the sound of a memory is")]
@@ -37,7 +39,7 @@ public class MemoryCaption : MonoBehaviour
         group.alpha = 0f;
         group.blocksRaycasts = false;
 
-        text = UiFactory.CreateTitle(canvas.transform, "Memory", UiFactory.Center, TextSize, 46, UiTheme.Hope);
+        text = UiFactory.CreateTitle(canvas.transform, "Memory", UiFactory.Center, TextSize, FontSize, UiTheme.Hope);
         text.rectTransform.pivot = UiFactory.Center;
         text.rectTransform.anchoredPosition = TextOffset;
         text.font = UiTheme.ItalicFont;

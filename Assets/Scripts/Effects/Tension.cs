@@ -23,7 +23,9 @@ public class Tension : MonoBehaviour
     [SerializeField] private AudioSource heartbeat;
     [SerializeField] private AudioSource breathing;
 
+    [Tooltip("The heartbeat's volume at full danger, from 0 to 1. With no danger it is silent")]
     [SerializeField] private float maxHeartbeatVolume = 0.7f;
+    [Tooltip("The breathing's volume with no danger and with full danger, from 0 to 1")]
     [SerializeField] private Vector2 breathingVolume = new Vector2(0.18f, 0.45f);
 
     [Tooltip("The heartbeat's pitch with no danger and with full danger. A faster heart when the danger is closer")]

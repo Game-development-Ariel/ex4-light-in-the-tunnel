@@ -10,6 +10,11 @@ public class ObjectiveThought : MonoBehaviour
 {
     private const int CanvasSortingOrder = 10;
 
+    // The line under the hope bar, in UI pixels from the top-left corner of the screen. Down is minus.
+    private static readonly Vector2 ThoughtSize = new Vector2(900f, 50f);
+    private static readonly Vector2 ThoughtPosition = new Vector2(40f, -112f);
+    private const int ThoughtFontSize = 32;
+
     [Tooltip("For the time the hero is held after being caught. The new goal is written when he can move again")]
     [SerializeField] private TunnelLevelSettings settings;
 
@@ -34,6 +39,7 @@ public class ObjectiveThought : MonoBehaviour
     [Tooltip("Seconds from picking up the bottle to the new goal")]
     [SerializeField] private float pickedThoughtDelay = 0.5f;
 
+    [Tooltip("How fast the goal is typed, in letters per second")]
     [SerializeField] private float lettersPerSecond = 18f;
 
     private Text thought;
@@ -44,8 +50,8 @@ public class ObjectiveThought : MonoBehaviour
     {
         Canvas canvas = UiFactory.CreateCanvas("Thought Canvas", CanvasSortingOrder);
         canvas.transform.SetParent(transform, false);
-        thought = UiFactory.CreateText(canvas.transform, "Thought", UiFactory.TopLeft, new Vector2(900f, 50f), 32, TextAnchor.MiddleLeft);
-        thought.rectTransform.anchoredPosition = new Vector2(40f, -112f);
+        thought = UiFactory.CreateText(canvas.transform, "Thought", UiFactory.TopLeft, ThoughtSize, ThoughtFontSize, TextAnchor.MiddleLeft);
+        thought.rectTransform.anchoredPosition = ThoughtPosition;
         thought.text = "";
     }
 

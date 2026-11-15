@@ -17,6 +17,12 @@ public class ObjectiveMarker : MonoBehaviour
     // The chevron sprite is drawn pointing down. Rotating by (angle + 90) points it at the angle.
     private const float SpriteDownOffset = 90f;
 
+    // The size of the arrow on the screen's edge, in UI pixels.
+    private static readonly Vector2 EdgeArrowSize = new Vector2(60f, 60f);
+
+    // A tiny length, in UI pixels, so the math never divides by zero when the goal is straight above, below or to the side.
+    private const float MinDirection = 0.001f;
+
     [Tooltip("Where to go after the bottle is picked up")]
     [SerializeField] private Transform mattress;
 
@@ -28,6 +34,7 @@ public class ObjectiveMarker : MonoBehaviour
     [SerializeField] private GameEvent bottleDropped;
 
     [Header("Look")]
+    [Tooltip("The color of both arrows, the floating one and the one on the edge")]
     [SerializeField] private Color markerColor = new Color(1f, 0.95f, 0.85f, 0.75f);
 
     [Tooltip("A faint glow behind the floating arrow, so it reads in the dark without shouting")]
@@ -86,10 +93,10 @@ public class ObjectiveMarker : MonoBehaviour
         Canvas canvas = UiFactory.CreateCanvas("Objective Canvas", CanvasSortingOrder);
         canvas.transform.SetParent(transform, false);
         canvasRect = canvas.GetComponent<RectTransform>();
-        Image arrow = UiFactory.CreateIcon(canvas.transform, "Chevron", new Vector2(60f, 60f));
+        Image arrow = UiFactory.CreateIcon(canvas.transform, "Chevron", EdgeArrowSize);
         arrow.color = markerColor;
         edgeArrow = arrow.rectTransform;
-        UiFactory.Place(edgeArrow, UiFactory.Center, Vector2.zero, new Vector2(60f, 60f));
+        UiFactory.Place(edgeArrow, UiFactory.Center, Vector2.zero, EdgeArrowSize);
     }
 
     /// <summary>
@@ -148,8 +155,8 @@ public class ObjectiveMarker : MonoBehaviour
         Vector2 direction = new Vector2((viewport.x - 0.5f) * half.x * 2f, (viewport.y - 0.5f) * half.y * 2f);
 
         // Stretch the direction until it touches the nearer edge (left/right or top/bottom).
-        float toSide = (half.x - edgeMargin) / Mathf.Max(Mathf.Abs(direction.x), 0.001f);
-        float toTop = (half.y - edgeMargin) / Mathf.Max(Mathf.Abs(direction.y), 0.001f);
+        float toSide = (half.x - edgeMargin) / Mathf.Max(Mathf.Abs(direction.x), MinDirection);
+        float toTop = (half.y - edgeMargin) / Mathf.Max(Mathf.Abs(direction.y), MinDirection);
         Vector2 position = direction * Mathf.Min(toSide, toTop);
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;

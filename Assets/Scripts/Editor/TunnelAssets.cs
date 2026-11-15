@@ -8,6 +8,16 @@ public static class TunnelAssets
 {
     private const string Folder = "Assets/Data/";
 
+    // How fast a crate and a sandbag must hit a wall to be at full volume, in tiles per second.
+    private const float CrateFullVolumeHitSpeed = 2f;
+    private const float SandbagFullVolumeHitSpeed = 1.4f;
+
+    // How wide the storage room's camera and the guard see, in degrees, and how far, in tiles.
+    private const float RoomCameraViewAngle = 40f;
+    private const float RoomCameraViewDistance = 5f;
+    private const float GuardViewAngle = 60f;
+    private const float GuardViewDistance = 4.5f;
+
     public const string ScenePath = "Assets/Scenes/Tutorial.unity";
     public const string BottlePrefabPath = "Assets/Prefabs/WaterBottle.prefab";
 
@@ -28,10 +38,10 @@ public static class TunnelAssets
     public static HopeEffects HopeEffects => SetupTools.Asset<HopeEffects>(Folder + "HopeEffects.asset");
 
     /// <summary>A crate is light, so it gets fast and needs a faster hit to be at full volume.</summary>
-    public static ImpactSounds CrateSounds => Sounds("CrateSounds", new[] { "CrateHit1", "CrateHit2" }, new[] { "CrateTouch" }, 2f);
+    public static ImpactSounds CrateSounds => Sounds("CrateSounds", new[] { "CrateHit1", "CrateHit2" }, new[] { "CrateTouch" }, CrateFullVolumeHitSpeed);
 
     /// <summary>A sandbag is heavy and slow, so a slower hit is already a loud one.</summary>
-    public static ImpactSounds SandbagSounds => Sounds("SandbagSounds", new[] { "SandbagHit" }, new[] { "SandbagTouch" }, 1.4f);
+    public static ImpactSounds SandbagSounds => Sounds("SandbagSounds", new[] { "SandbagHit" }, new[] { "SandbagTouch" }, SandbagFullVolumeHitSpeed);
 
     // The values are written only when the asset is new, so tuning it in the Inspector is kept.
     private static ImpactSounds Sounds(string name, string[] wallHitSounds, string[] touchSounds, float fullVolumeHitSpeed)
@@ -50,10 +60,10 @@ public static class TunnelAssets
     }
 
     /// <summary>The camera in the storage room sees a shorter distance, so the room's entrance is safe.</summary>
-    public static VisionStats RoomCameraVision => Vision("RoomCameraVision", 40f, 5f);
+    public static VisionStats RoomCameraVision => Vision("RoomCameraVision", RoomCameraViewAngle, RoomCameraViewDistance);
 
     /// <summary>A guard sees wider than a camera, but only as far as his flashlight.</summary>
-    public static VisionStats GuardVision => Vision("GuardVision", 60f, 4.5f);
+    public static VisionStats GuardVision => Vision("GuardVision", GuardViewAngle, GuardViewDistance);
 
     // The values are written only when the asset is new, so tuning it in the Inspector is kept.
     private static VisionStats Vision(string name, float viewAngle, float viewDistance)

@@ -12,6 +12,26 @@ public static class LooseObjectBuilder
     private static readonly Color SandColor = new Color(0.62f, 0.56f, 0.42f);
     private static readonly Color DoorColor = new Color(0.34f, 0.36f, 0.4f);
 
+    // The size of a crate and a sandbag, in tiles, and their mass, in kilograms. The sandbag is heavier.
+    private static readonly Vector2 CrateSize = new Vector2(0.9f, 0.9f);
+    private const float CrateMass = 3f;
+    private static readonly Vector2 SandbagSize = new Vector2(0.8f, 0.55f);
+    private const float SandbagMass = 5f;
+
+    // How fast a pushed object slows down when nothing pushes it, for both sliding and turning.
+    private const float PushableDamping = 5f;
+
+    // The cell door: its length and thickness in tiles, its mass in kilograms, how fast its swing slows down,
+    // and how far it can turn to each side of closed, in degrees.
+    private const float DoorLength = 0.8f;
+    private const float DoorThickness = 0.18f;
+    private const float DoorMass = 2f;
+    private const float DoorDamping = 3f;
+    private const float DoorMaxAngle = 100f;
+
+    // The loose objects are drawn above the floor and the walls.
+    private const int SortingOrder = 5;
+
     /// <summary>
     /// Crates and sandbags are rigidbodies that slide on the floor, and the cell door hangs on a hinge joint.
     /// They also stop the camera's rays, so a crate can be pushed ahead as cover.
@@ -32,10 +52,10 @@ public static class LooseObjectBuilder
                 switch (LAYOUT[row][column])
                 {
                     case 'X':
-                        CreatePushable("Crate", parent, center, new Vector2(0.9f, 0.9f), crateSprite, Color.white, 3f, TunnelAssets.CrateSounds, warning);
+                        CreatePushable("Crate", parent, center, CrateSize, crateSprite, Color.white, CrateMass, TunnelAssets.CrateSounds, warning);
                         break;
                     case 'G':
-                        CreatePushable("Sandbag", parent, center, new Vector2(0.8f, 0.55f), SceneParts.Square, SandColor, 5f, TunnelAssets.SandbagSounds, warning);
+                        CreatePushable("Sandbag", parent, center, SandbagSize, SceneParts.Square, SandColor, SandbagMass, TunnelAssets.SandbagSounds, warning);
                         break;
                     case 'H':
                         CreateHingedDoor(parent, center);
@@ -49,8 +69,8 @@ public static class LooseObjectBuilder
     {
         GameObject pushable = CreateSpriteBox(name, parent, center, size, sprite, color);
         Rigidbody body = AddFlatRigidbody(pushable, mass);
-        body.linearDamping = 5f; // Like friction with the floor: it stops soon after the push ends.
-        body.angularDamping = 5f;
+        body.linearDamping = PushableDamping; // Like friction with the floor: it stops soon after the push ends.
+        body.angularDamping = PushableDamping;
         body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
         ImpactNoise noise = pushable.AddComponent<ImpactNoise>();
         SetupTools.SetField(noise, "warning", warning);
@@ -60,24 +80,23 @@ public static class LooseObjectBuilder
     /// <summary>The door fills the doorway and turns around its top end, where the hinge joint holds it to the wall.</summary>
     private static void CreateHingedDoor(Transform parent, Vector3 doorwayCenter)
     {
-        const float Length = 0.8f;
         var door = new GameObject("Cell Door");
         door.transform.SetParent(parent, false);
-        door.transform.position = doorwayCenter + new Vector3(0f, 0.4f, 0f);
-        CreateSpriteBox("Panel", door.transform, door.transform.position + new Vector3(0f, -Length / 2f, 0f), new Vector2(0.18f, Length), SceneParts.Square, DoorColor);
+        door.transform.position = doorwayCenter + new Vector3(0f, DoorLength / 2f, 0f);
+        CreateSpriteBox("Panel", door.transform, door.transform.position + new Vector3(0f, -DoorLength / 2f, 0f), new Vector2(DoorThickness, DoorLength), SceneParts.Square, DoorColor);
 
         BoxCollider box = door.AddComponent<BoxCollider>();
-        box.center = new Vector3(0f, -Length / 2f, 0f);
-        box.size = new Vector3(0.18f, Length, 1f);
+        box.center = new Vector3(0f, -DoorLength / 2f, 0f);
+        box.size = new Vector3(DoorThickness, DoorLength, 1f);
 
-        Rigidbody body = AddFlatRigidbody(door, 2f);
-        body.angularDamping = 3f;
+        Rigidbody body = AddFlatRigidbody(door, DoorMass);
+        body.angularDamping = DoorDamping;
 
         HingeJoint hinge = door.AddComponent<HingeJoint>();
         hinge.anchor = Vector3.zero;
         hinge.axis = Vector3.forward; // Turns on the floor plane, like a door seen from above.
         hinge.useLimits = true;
-        hinge.limits = new JointLimits { min = -100f, max = 100f };
+        hinge.limits = new JointLimits { min = -DoorMaxAngle, max = DoorMaxAngle };
     }
 
     private static GameObject CreateSpriteBox(string name, Transform parent, Vector3 center, Vector2 size, Sprite sprite, Color color)
@@ -91,7 +110,7 @@ public static class LooseObjectBuilder
         SpriteRenderer spriteRenderer = picture.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprite;
         spriteRenderer.color = color;
-        spriteRenderer.sortingOrder = 5;
+        spriteRenderer.sortingOrder = SortingOrder;
         if (name != "Panel")
         {
             box.AddComponent<BoxCollider>().size = new Vector3(size.x, size.y, 1f);

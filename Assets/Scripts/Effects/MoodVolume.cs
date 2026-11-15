@@ -19,9 +19,13 @@ public class MoodVolume : MonoBehaviour
     [Tooltip("How much the edges grow and shrink with each breath")]
     [SerializeField] private float breathVignette = 0.03f;
 
+    [Tooltip("How dark the screen edges are when calm, as the vignette intensity from 0 to 1")]
     [SerializeField] private float baseVignette = 0.36f;
+    [Tooltip("How much darker the edges get at full danger, as vignette intensity")]
     [SerializeField] private float dangerVignette = 0.18f;
+    [Tooltip("The color saturation when calm. 0 = normal, -100 = black and white")]
     [SerializeField] private float baseSaturation = -22f;
+    [Tooltip("How much the saturation changes at full danger, on the same -100 to 100 scale")]
     [SerializeField] private float dangerSaturation = -25f;
 
     [Tooltip("How much darker the picture is at the lowest hope, in exposure stops")]

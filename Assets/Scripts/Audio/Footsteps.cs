@@ -14,6 +14,7 @@ public class Footsteps : MonoBehaviour
     [Tooltip("Each step gets a random pitch in this range, so walking doesn't sound like a loop")]
     [SerializeField] private Vector2 pitchRange = new Vector2(0.85f, 1.1f);
 
+    [Tooltip("The volume of each step, from 0 to 1")]
     [SerializeField] private float volume = 0.35f;
 
     private PlayerMovement movement;

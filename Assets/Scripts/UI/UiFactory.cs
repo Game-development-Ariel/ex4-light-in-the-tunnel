@@ -22,9 +22,11 @@ public static class UiFactory
     private static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.7f);
     private static readonly Vector2 ShadowOffset = new Vector2(2f, -2f);
 
-    /// <summary>Anchor points of a parent: the middle, and the top-left corner.</summary>
+    /// <summary>Anchor points of a parent: the middle, the top-left corner, and the middle of the top and bottom edges.</summary>
     public static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
     public static readonly Vector2 TopLeft = new Vector2(0f, 1f);
+    public static readonly Vector2 TopCenter = new Vector2(0.5f, 1f);
+    public static readonly Vector2 BottomCenter = new Vector2(0.5f, 0f);
 
     public static Canvas CreateCanvas(string name, int sortingOrder)
     {

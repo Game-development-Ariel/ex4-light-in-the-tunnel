@@ -19,8 +19,10 @@ public class CameraIndicators : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float blinkOnPart = 0.3f;
 
+    [Tooltip("The color of the blinking light")]
     [SerializeField] private Color ledColor = new Color(1f, 0.15f, 0.1f);
 
+    [Tooltip("The volume of the hum up close, from 0 to 1")]
     [SerializeField] private float humVolume = 0.35f;
 
     [Tooltip("The hum is full up to the first distance and silent from the second, in world units from the listener. "

@@ -11,6 +11,19 @@ public class HopeBar : MonoBehaviour
     // Higher than the minimap's canvas, so the HUD is drawn on top.
     private const int CanvasSortingOrder = 10;
 
+    // Layout in UI pixels, from the top-left corner of the screen. Down is minus.
+    private static readonly Vector2 FlameSize = new Vector2(64f, 64f);
+    // Where the flame's base (bottom middle) sits.
+    private static readonly Vector2 FlamePosition = new Vector2(70f, -76f);
+    private static readonly Vector2 LabelSize = new Vector2(200f, 30f);
+    private static readonly Vector2 LabelPosition = new Vector2(112f, -36f);
+    private const int LabelFontSize = 26;
+    private static readonly Vector2 BarPosition = new Vector2(112f, -74f);
+    private static readonly Vector2 BarSize = new Vector2(280f, 12f);
+    private static readonly Vector2 GainSize = new Vector2(260f, 44f);
+    private static readonly Vector2 GainPosition = new Vector2(480f, -50f);
+    private const int GainFontSize = 34;
+
     [SerializeField] private Hope hope;
 
     [Tooltip("How fast the bar slides to the new value, in fractions of the bar per second")]
@@ -91,26 +104,26 @@ public class HopeBar : MonoBehaviour
     /// <summary>A small flame, the word "hope", a thin bar beside it, and the text of the gain.</summary>
     private void Create(Transform canvas)
     {
-        Image flameIcon = UiFactory.CreateIcon(canvas, "Hope", new Vector2(64f, 64f));
+        Image flameIcon = UiFactory.CreateIcon(canvas, "Hope", FlameSize);
         flame = flameIcon.rectTransform;
-        UiFactory.Place(flame, UiFactory.TopLeft, new Vector2(70f, -76f), new Vector2(64f, 64f));
-        flame.pivot = new Vector2(0.5f, 0f); // It flickers from its base, like a real flame.
+        UiFactory.Place(flame, UiFactory.TopLeft, FlamePosition, FlameSize);
+        flame.pivot = UiFactory.BottomCenter; // It flickers from its base, like a real flame.
 
-        Text label = UiFactory.CreateText(canvas, "Label", UiFactory.TopLeft, new Vector2(200f, 30f), 26, TextAnchor.MiddleLeft);
-        label.rectTransform.anchoredPosition = new Vector2(112f, -36f);
+        Text label = UiFactory.CreateText(canvas, "Label", UiFactory.TopLeft, LabelSize, LabelFontSize, TextAnchor.MiddleLeft);
+        label.rectTransform.anchoredPosition = LabelPosition;
         label.color = UiTheme.Muted;
         label.text = "hope";
 
         Image barBack = UiFactory.CreatePanel(canvas, "Hope Bar", "BarBack");
-        UiFactory.Place(barBack.rectTransform, UiFactory.TopLeft, new Vector2(112f, -74f), new Vector2(280f, 12f));
+        UiFactory.Place(barBack.rectTransform, UiFactory.TopLeft, BarPosition, BarSize);
 
         hopeFill = UiFactory.CreateImage(barBack.transform, "Fill", UiTheme.Sprite("BarFill"), UiTheme.Hope);
         UiFactory.Stretch(hopeFill.rectTransform);
         hopeFill.type = Image.Type.Filled; // fillAmount from 0 to 1 cuts the picture from the right.
         hopeFill.fillMethod = Image.FillMethod.Horizontal;
 
-        gainText = UiFactory.CreateTitle(canvas, "Gain", UiFactory.TopLeft, new Vector2(260f, 44f), 34, UiTheme.Hope);
-        gainText.rectTransform.anchoredPosition = new Vector2(480f, -50f);
+        gainText = UiFactory.CreateTitle(canvas, "Gain", UiFactory.TopLeft, GainSize, GainFontSize, UiTheme.Hope);
+        gainText.rectTransform.anchoredPosition = GainPosition;
         gainText.alignment = TextAnchor.MiddleLeft;
         gainText.text = "";
     }
