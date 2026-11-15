@@ -218,6 +218,95 @@ public class ArchitectureTests
         Assert.IsEmpty(problems, Fail(problems));
     }
 
+    // Files whose tuning numbers were moved into named fields and constants. A new number in one of their
+    // methods fails here: give it a name (a [SerializeField] with a [Tooltip], or a const for layout).
+    private static readonly string[] NamedNumberFiles =
+    {
+        "DustMotes", "HintToast", "MemoryCaption", "ButtonFeel", "CaptureBlackout", "GuardPatrol", "UiFactory",
+    };
+
+    // Plain math, not tuning: none, whole, doubling, halving (centering) and a negative one.
+    private static readonly HashSet<string> MathNumbers = new HashSet<string> { "0f", "1f", "2f", "0.5f", "-1f" };
+
+    private static readonly Regex FloatLiteral = new Regex(@"(?<![\w.])-?\d+(?:\.\d+)?f\b");
+
+    // A line that names a number: a const, a static readonly, a field (with or without [SerializeField]) or an attribute.
+    private static readonly Regex Declaration = new Regex(
+        @"^\s*(\[|.*\bconst\b|.*\bstatic\s+readonly\b|(\[SerializeField\]\s*)?(private|public|protected)\s+[\w<>\[\],]+\s+\w+\s*(=|;))");
+
+    [Test]
+    public void FilesWithNamedNumbers_HaveNoNewInlineNumbers()
+    {
+        var problems = new List<string>();
+        foreach (SourceFile file in Runtime.Where(file => NamedNumberFiles.Contains(file.Name)))
+        {
+            string[] lines = file.Code.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (Declaration.IsMatch(lines[i]))
+                {
+                    continue;
+                }
+                foreach (Match number in FloatLiteral.Matches(lines[i]).Cast<Match>().Where(m => !MathNumbers.Contains(m.Value)))
+                {
+                    problems.Add($"{file}:{i + 1} uses the number {number.Value}: {lines[i].Trim()}");
+                }
+            }
+        }
+        Assert.IsEmpty(problems, Fail(problems));
+    }
+
+    [Test]
+    public void EveryFile_HasTheNamedNumbersFiles()
+    {
+        string[] names = Runtime.Select(file => file.Name).ToArray();
+        CollectionAssert.IsSubsetOf(NamedNumberFiles, names, "A renamed file must be renamed in this test too");
+    }
+
+    // A sound's volume and an animation's seconds are tuning, so in all the game code they come from a named value.
+    [Test]
+    public void SoundVolumesAndAnimationTimes_AreNeverInlineNumbers()
+    {
+        var call = new Regex(@"(Sfx\.Play\([^;]*?,\s*-?\d+(\.\d+)?f\s*\)|UiAnim\.\w+\([^;]*?,\s*-?\d+(\.\d+)?f\s*\))");
+        var problems = new List<string>();
+        foreach (SourceFile file in Runtime)
+        {
+            foreach (Match match in call.Matches(file.Code))
+            {
+                problems.Add($"{file}: {match.Value}");
+            }
+        }
+        Assert.IsEmpty(problems, Fail(problems));
+    }
+
+    // A color written as numbers inside a method is a hidden tuning value. White or black (0 and 1 only) is fine.
+    [Test]
+    public void Colors_InMethods_AreNamed()
+    {
+        var literalColor = new Regex(@"new\s+Color\(\s*([-\d.f\s,]+)\)");
+        var problems = new List<string>();
+        foreach (SourceFile file in Runtime.Where(file => file.Folder != "Editor"))
+        {
+            string[] lines = file.Code.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (Declaration.IsMatch(lines[i]))
+                {
+                    continue;
+                }
+                foreach (Match color in literalColor.Matches(lines[i]))
+                {
+                    bool plain = color.Groups[1].Value.Split(',').All(part => MathNumbers.Contains(part.Trim()) && part.Trim() != "2f");
+                    if (!plain)
+                    {
+                        problems.Add($"{file}:{i + 1}: {color.Value}");
+                    }
+                }
+            }
+        }
+        Assert.IsEmpty(problems, Fail(problems));
+    }
+
     // The README is the map of the code. A class it doesn't mention is a class the team can't find.
     [Test]
     public void TheReadme_MentionsEveryClass()
