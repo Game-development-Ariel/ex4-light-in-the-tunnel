@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Shows the guard's footsteps as a faint ring that pulses on the floor, even behind a wall,
@@ -7,7 +8,9 @@ using UnityEngine;
 [RequireComponent(typeof(GuardPatrol))]
 public class HeardSteps : MonoBehaviour
 {
-    [SerializeField] private HopeSenses listener;
+    [Tooltip("The hero's senses: where the hero is, and how far he hears")]
+    [FormerlySerializedAs("listener")]
+    [SerializeField] private HopeSenses heroSenses;
 
     [Tooltip("The ring that is drawn at the guard's feet")]
     [SerializeField] private SpriteRenderer ring;
@@ -27,8 +30,8 @@ public class HeardSteps : MonoBehaviour
 
     private void Update()
     {
-        float distance = Vector2.Distance(transform.position, listener.transform.position);
-        bool heard = patrol.IsWalking && distance <= listener.HearingRange;
+        float distance = Vector2.Distance(transform.position, heroSenses.transform.position);
+        bool heard = patrol.IsWalking && distance <= heroSenses.HearingRange;
         ring.enabled = heard;
         if (!heard)
         {
