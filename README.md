@@ -13,8 +13,9 @@
 
 ## איך מריצים
 
-1. ב-Unity Hub פותחים את התיקייה של המאגר, בגרסה 6000.3.25f1.
-2. פותחים את הסצנה `Assets/Scenes/Tutorial` ולוחצים Play.
+1. אחרי `git clone` מריצים `git lfs pull`, כי התמונות והצלילים שמורים ב-Git LFS.
+2. ב-Unity Hub פותחים את התיקייה של המאגר, בגרסה 6000.3.25f1.
+3. פותחים את הסצנה `Assets/Scenes/Tutorial` ולוחצים Play.
 
 הסצנה נבנית מקוד, בכלים שב-`Assets/Scripts/Editor`. אחרי שינוי בכלים מריצים `Tools > Rebuild Scene`. בנייה לדפדפן: `Tools > Build WebGL`.
 
