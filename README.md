@@ -62,7 +62,7 @@ Assets/
 │   ├── Audio/      Footsteps, MusicPlayer, Sfx
 │   ├── Camera/     CameraFollow, OrientationCameraSize, ScreenSizeWatcher
 │   └── Editor/     the tools that build the scene:
-│                   ProjectBuilder (Rebuild Scene, Build WebGL), TunnelAssets, SetupTools,
+│                   ProjectBuilder (Rebuild Scene, Build WebGL), TunnelAssets, SetupTools, SceneParts, PlaceholderSprites,
 │                   1 map:  TutorialMapBuilder, TutorialLayout, WallColliderBuilder, LooseObjectBuilder, WatcherBuilder
 │                   2 game: TunnelLevelSetup
 │                   3 feel: GameFeelSetup, LightSetup, MoodSetup, SoundSetup, TeachingSetup, HudSetup
