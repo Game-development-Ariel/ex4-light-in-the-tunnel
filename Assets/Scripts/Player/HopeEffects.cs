@@ -22,13 +22,17 @@ public class HopeEffects : ScriptableObject
     [Tooltip("When hope is gained, the light flares for a moment: tiles added to the sight radius")]
     public float surgeRadius = 2.5f;
 
+    [Tooltip("When hope is gained, the light flares for a moment: brightness added to the light around the hero")]
+    public float surgeBrightness = 0.5f;
+
     [Tooltip("Seconds the flare takes to fade")]
+    [Min(0.01f)]
     public float surgeSeconds = 2f;
 
     [Tooltip("From how far the hero hears a guard's steps, in tiles")]
     public Vector2 hearingRange = new Vector2(1.5f, 14f);
 
-    [Tooltip("At this hope and above the hero is steady")]
+    [Tooltip("At this hope and above the hero is steady. HopeThoughts says it when hope crosses it")]
     public int steadyHope = 50;
 
     [Tooltip("At this hope and above the hero is full of faith")]

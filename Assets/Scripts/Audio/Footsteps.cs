@@ -1,43 +1,46 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Plays a soft footstep (bare feet on sandy concrete) every few steps while the player walks.
-/// It reads the speed from the CharacterController, so it stops by itself when the player stops or hits a wall.
+/// The steps are the sounds Step1, Step2, ... in Resources/Audio, as many as there are.
 /// </summary>
-[RequireComponent(typeof(CharacterController), typeof(AudioSource))]
+[RequireComponent(typeof(PlayerMovement), typeof(AudioSource))]
 public class Footsteps : MonoBehaviour
 {
-    // Slower than this counts as standing still.
-    private const float MinWalkSpeed = 0.3f;
-
     [Tooltip("Seconds between two steps")]
     [SerializeField] private float stepInterval = 0.5f;
 
     [Tooltip("Each step gets a random pitch in this range, so walking doesn't sound like a loop")]
     [SerializeField] private Vector2 pitchRange = new Vector2(0.85f, 1.1f);
 
+    [Tooltip("The volume of each step, from 0 to 1")]
     [SerializeField] private float volume = 0.35f;
 
-    private CharacterController controller;
+    private PlayerMovement movement;
     private AudioSource audioSource;
     private AudioClip[] steps;
     private float nextStepTime;
 
     private void Awake()
     {
-        controller = GetComponent<CharacterController>();
+        movement = GetComponent<PlayerMovement>();
         audioSource = GetComponent<AudioSource>();
-        steps = new AudioClip[4];
-        for (int i = 0; i < steps.Length; i++)
+
+        // Loads Step1, Step2, ... until there is no next one, so adding a step sound needs no code.
+        var found = new List<AudioClip>();
+        AudioClip step = Resources.Load<AudioClip>("Audio/Step1");
+        while (step != null)
         {
-            steps[i] = Resources.Load<AudioClip>("Audio/Step" + (i + 1));
+            found.Add(step);
+            step = Resources.Load<AudioClip>("Audio/Step" + (found.Count + 1));
         }
+        steps = found.ToArray();
     }
 
     private void Update()
     {
-        bool isWalking = controller.velocity.magnitude > MinWalkSpeed;
-        if (!isWalking || Time.time < nextStepTime)
+        if (!movement.IsWalking || steps.Length == 0 || Time.time < nextStepTime)
         {
             return;
         }

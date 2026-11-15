@@ -12,6 +12,7 @@ public class CameraSweep : MonoBehaviour
     [SerializeField] private float sweepAngle = 60f;
 
     [Tooltip("Seconds it takes to turn from one side to the other")]
+    [Min(0.01f)]
     [SerializeField] private float turnSeconds = 5f;
 
     [Tooltip("Seconds the camera stays still at each side before turning back")]
